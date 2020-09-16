@@ -8,6 +8,9 @@ public class Builder : MonoBehaviour
     public GameObject mCellObj;
     ///refers to the number of floor the builder is located on
     private int mFloor;
+    
+    ///Id of the player owner of the builder
+    public int mPlayer;
 
     // Start is called before the first frame update
     void Start()

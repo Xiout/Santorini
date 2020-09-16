@@ -11,21 +11,29 @@ public class Board : MonoBehaviour
     public int mNbCellsPerRow;
     ///dimension Z of the board
     public int mNbCellsPerColumn;
+    ///number of players
+    public int mNbPlayers;
 
-    //2 material to do a checker board (temporary)
-    public Material mMaterialChecker1;
-    public Material mMaterialChecker2;
+    ///material assigned for selected object
+    public Material mMaterialSelectedObj;
+    private Material mPreviousMaterialSelectedObj;
 
     ///List of all "cells" of the board
     ///This list is automatically filled at the generation of the cells
     ///Each cell is a plane with a script Cell attached to it
     private List<GameObject> mAllCellObjs;
+    ///List of builders
+    private List<GameObject> mAllBuilders;
+
+    private GameObject mSelectedObject;
 
     // Start is called before the first frame update
     void Start()
     {
-        //--Generation of all the cells of the board--
+        mAllBuilders = new List<GameObject>();
+        mAllCellObjs = new List<GameObject>();
 
+        //--Generation of all the cells of the board--
         //Cells are organized by row (this make it easier to find adjoning of a newly created cell)
         GameObject lRowObj = null;
         GameObject lPreviousRowObj = null;
@@ -92,21 +100,9 @@ public class Board : MonoBehaviour
                     }
                 }
 
+                mAllCellObjs.Add(lCellObj);
                 lCellObj.transform.SetParent(lRowObj.transform);
 
-                //Paint cells for the checker board
-                MeshRenderer lMeshRenderer = lCellObj.GetComponent<MeshRenderer>();
-                if((iCell+iRow)%2 == 0)
-                {
-                    lMeshRenderer.materials[0] = mMaterialChecker1;
-                    Debug.Log(mMaterialChecker1.name + " // " + lMeshRenderer.materials[0].name);
-                }
-                else
-                {
-                    lMeshRenderer.materials[0] = mMaterialChecker2;
-                    Debug.Log(mMaterialChecker2.name + " // " + lMeshRenderer.materials[0].name);
-                }
-                
             }
             lRowObj.transform.SetParent(gameObject.transform);
             lPreviousRowObj = lRowObj;
@@ -123,12 +119,56 @@ public class Board : MonoBehaviour
             RaycastHit lMouseRayHit;
             if (Physics.Raycast(lMouseRay, out lMouseRayHit))
             {
-                Debug.Log(lMouseRayHit.transform.gameObject.name);
+                //retrieve the clickedObject
+                GameObject lClickedObject = lMouseRayHit.transform.gameObject;
+
+                //the click is "confirmed" if the previous selected object is same that the clicked object
+                //in other words, we have to clic twice on the same cell to place a builder on it
+                bool lIsClickConfirmed = false;
+
+                //the clicked object is different that the currently selected object : the selection change
+                if (mSelectedObject != lClickedObject)
+                {
+                    //This part is for reassign the original material the previously clicked object
+                    Renderer lRenderer = null;
+                    if (mSelectedObject != null)
+                    {
+                        lRenderer = mSelectedObject.GetComponent<Renderer>();
+                        lRenderer.enabled = true;
+                        lRenderer.sharedMaterial = mPreviousMaterialSelectedObj;
+                    }
+
+                    //the currently selected object is now the object we just clicked
+                    mSelectedObject = lClickedObject;
+
+                    //in order to distinguish this objet from the other, we change its material 
+                    lRenderer = mSelectedObject.GetComponent<Renderer>();
+                    lRenderer.enabled = true;
+                    mPreviousMaterialSelectedObj = lRenderer.sharedMaterial;
+                    lRenderer.sharedMaterial = mMaterialSelectedObj;
+                }else{
+                    lIsClickConfirmed = true;
+                }
+
+                //Builders placing phase
+                if (mAllBuilders.Count < mNbPlayers * 2)
+                {
+                    if(lIsClickConfirmed && mAllCellObjs.Contains(mSelectedObject))
+                    {
+                        GameObject lBuilderObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                        lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / mNbPlayers)) + "_p"+ ((mAllBuilders.Count % mNbPlayers) + 1);
+                        Builder lBuilderScr = lBuilderObj.AddComponent<Builder>();
+                        lBuilderScr.mCellObj = mSelectedObject;
+                        lBuilderScr.mPlayer = (mAllBuilders.Count % mNbPlayers) + 1;
+
+                        mAllBuilders.Add(lBuilderObj);
+                    }
+                }
+
+                //TODO : Moving Builder phase
+                //TODO : Building phase
             }
         }
-
-        //TODO : verifier que l'objet clicked est un builder
-        //si oui : afficher les cases selectionnables
 
     }
 }

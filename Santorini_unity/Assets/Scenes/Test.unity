@@ -1528,8 +1528,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mNbCellsPerRow: 5
   mNbCellsPerColumn: 5
-  mMaterialChecker1: {fileID: 2100000, guid: 3b161524a5845704cb78b34620d23724, type: 2}
-  mMaterialChecker2: {fileID: 2100000, guid: 7a7704645557e4f4b923a500868bb7ed, type: 2}
+  mNbPlayers: 2
+  mMaterialSelectedObj: {fileID: 2100000, guid: 3ec75d385bcf8664e81457abf3e3ac76,
+    type: 2}
 --- !u!4 &1454450687
 Transform:
   m_ObjectHideFlags: 0
@@ -1784,12 +1785,12 @@ GameObject:
   - component: {fileID: 1909413427}
   - component: {fileID: 1909413431}
   m_Layer: 0
-  m_Name: Builder1
+  m_Name: OldBuilder1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!136 &1909413427
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1878,6 +1879,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mCellObj: {fileID: 1076673020}
+  mPlayer: 0
 --- !u!1 &1949676844
 GameObject:
   m_ObjectHideFlags: 0
