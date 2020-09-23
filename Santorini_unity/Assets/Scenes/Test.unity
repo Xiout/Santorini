@@ -1531,6 +1531,10 @@ MonoBehaviour:
   mNbPlayers: 2
   mMaterialSelectedObj: {fileID: 2100000, guid: 3ec75d385bcf8664e81457abf3e3ac76,
     type: 2}
+  mCellMaterial: {fileID: 2100000, guid: e92743def574adf4f82368a3a3a96ab2, type: 2}
+  mPlayersMaterial:
+  - {fileID: 2100000, guid: 3b161524a5845704cb78b34620d23724, type: 2}
+  - {fileID: 2100000, guid: 7a7704645557e4f4b923a500868bb7ed, type: 2}
 --- !u!4 &1454450687
 Transform:
   m_ObjectHideFlags: 0
@@ -1878,7 +1882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfe8423bc8893254e93884bb11e3312d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mCellObj: {fileID: 1076673020}
+  mCell: {fileID: 0}
   mPlayer: 0
 --- !u!1 &1949676844
 GameObject:

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Cell : MonoBehaviour
+public class Cell : BoardGameComponent
 {
     ///List of all adjoning cells
-    public List<GameObject> mAdjoiningCells;
+    public List<Cell> mAdjoiningCells;
 
     ///Number of floor built on this cell
     private int mBuildingLevel;
@@ -24,5 +24,10 @@ public class Cell : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public int getBuildingLevel()
+    {
+        return mBuildingLevel;
     }
 }
