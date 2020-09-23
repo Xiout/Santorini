@@ -6,8 +6,6 @@ public class Builder : BoardGameComponent
 {
     ///refers to the cell on wich the builder is located
     public Cell mCell;
-    ///refers to the number of floor the builder is located on
-    private int mFloor;
     
     ///Id of the player owner of the builder
     public int mPlayer;
@@ -15,7 +13,6 @@ public class Builder : BoardGameComponent
     // Start is called before the first frame update
     void Start()
     {
-        mFloor = 0;
         if (mCell != null)
         {
             UpdatePosition();
@@ -24,6 +21,8 @@ public class Builder : BoardGameComponent
             mCell.mIsFree = false;
         }
     }
+
+    public static readonly float[] sPresetY = { 1.0f, 2.95f, 5.25f, 6.50f };
 
     // Update is called once per frame
     void Update()
@@ -38,7 +37,7 @@ public class Builder : BoardGameComponent
         for (int i=0; i< lAvailableCells.Count; ++i)
         {
             Cell lCell = lAvailableCells[i];
-            if(!lCell.mIsFree || lCell.getBuildingLevel()-mFloor >= 2)
+            if(!lCell.mIsFree || lCell.getBuildingLevel()-mCell.getBuildingLevel() >= 2)
             {
                 lAvailableCells.RemoveAt(i);
                 i--;
@@ -67,7 +66,7 @@ public class Builder : BoardGameComponent
 
     private bool isCellAvailableForMoving(Cell pCell)
     {
-        return mCell.mAdjoiningCells.Contains(pCell) && pCell.mIsFree;
+        return mCell.mAdjoiningCells.Contains(pCell) && pCell.mIsFree && pCell.getBuildingLevel()-mCell.getBuildingLevel()<2;
     }
 
     public bool TryMove(Cell pCell)
@@ -85,10 +84,11 @@ public class Builder : BoardGameComponent
     }
 
     ///Reset the position of the builder based on the position of the cell
-    private void UpdatePosition()
+    public void UpdatePosition()
     {
         Vector3 lCellPos = mCell.gameObject.transform.position;
-        Vector3 lNewPos = new Vector3(lCellPos.x, gameObject.transform.position.y, lCellPos.z);
+        float yPos = sPresetY[mCell.getBuildingLevel()];
+        Vector3 lNewPos = new Vector3(lCellPos.x, yPos, lCellPos.z);
         gameObject.transform.SetPositionAndRotation(lNewPos, gameObject.transform.rotation);
     }
 }

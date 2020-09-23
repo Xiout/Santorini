@@ -30,4 +30,14 @@ public class Cell : BoardGameComponent
     {
         return mBuildingLevel;
     }
+
+    public bool build()
+    {
+        if(mBuildingLevel<4 && mIsFree)
+        {
+            ++mBuildingLevel;
+            return true;
+        }
+        return false;
+    }
 }

@@ -37,6 +37,8 @@ public class Board : MonoBehaviour
     ///the size of this list MUST be equal to mNbPlayers
     public List<Material> mPlayersMaterial;
 
+    public List<GameObject> mBuildingPrefabs;
+
     ///List of all cells of the board
     ///This list is automatically filled at the generation of the cells
     ///each Cell is attached to a primitive gameobject "plane"
@@ -133,7 +135,6 @@ public class Board : MonoBehaviour
                     lRenderer.enabled = true;
                     lRenderer.sharedMaterial = mCellMaterial;
                 }
-
             }
             lRowObj.transform.SetParent(gameObject.transform);
             lPreviousRowObj = lRowObj;
@@ -171,15 +172,15 @@ public class Board : MonoBehaviour
                         if (lBuilder != null && mAllBuilders.Contains(lBuilder))
                         {
                             //A builder was selected previously
-                            Cell lCell = lClickedBGComp as Cell;
-                            if(lCell != null && mAllCells.Contains(lCell))
+                            Cell lClickedCell = lClickedBGComp as Cell;
+                            if(lClickedCell != null && mAllCells.Contains(lClickedCell))
                             {
                                 //The just clicked object is a cell  
                                 if (mGamePhase == 1)
                                 {
                                     //MOVE
                                     Cell lPrevCell = lBuilder.mCell;
-                                    if (lBuilder.TryMove(lCell))
+                                    if (lBuilder.TryMove(lClickedCell))
                                     {
                                         //changing to building phase
                                         mGamePhase = 2;
@@ -210,6 +211,30 @@ public class Board : MonoBehaviour
                                 {
                                     //BUILD
                                     Debug.Log("BUILDING PHASE");
+                                    if (lClickedCell.build())
+                                    {
+                                        //generation of the building
+                                        GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.getBuildingLevel()-1], lClickedCell.transform.position, new Quaternion());
+                                        building.transform.SetParent(lClickedCell.transform);
+
+                                        //reset the default material on all available for build cells
+                                        List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForBuilding();
+                                        for (int i = 0; i < lAvailableCells.Count; ++i)
+                                        {
+                                            lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
+                                            lRenderer.enabled = true;
+                                            lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
+                                        }
+                                        //deselect the current builder
+                                        lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
+                                        lRenderer.enabled = true;
+                                        lRenderer.sharedMaterial = mSelectedBGComp.getDefaultMaterial();
+                                        mSelectedBGComp = null;
+
+                                        //change of game phase and turn
+                                        mGamePhase = 1;
+                                        mCurrentPlayer = (mCurrentPlayer + 1) % mNbPlayers;
+                                    }
                                 }
                             }
                         }

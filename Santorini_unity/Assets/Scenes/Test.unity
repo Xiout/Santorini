@@ -1535,6 +1535,11 @@ MonoBehaviour:
   mPlayersMaterial:
   - {fileID: 2100000, guid: 3b161524a5845704cb78b34620d23724, type: 2}
   - {fileID: 2100000, guid: 7a7704645557e4f4b923a500868bb7ed, type: 2}
+  mBuildingPrefabs:
+  - {fileID: 8816297380455096197, guid: dc67b0d6523dfa346ba098d296c127f5, type: 3}
+  - {fileID: 2149807791941516008, guid: 99a81c9f3f168aa49828acef747061e3, type: 3}
+  - {fileID: 5272859049341427303, guid: afc0a99f357181941948b8cee89f3d48, type: 3}
+  - {fileID: 955471785109792906, guid: 862d330f07f823148bc6c60610364b6d, type: 3}
 --- !u!4 &1454450687
 Transform:
   m_ObjectHideFlags: 0
