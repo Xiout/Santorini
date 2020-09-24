@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+
 
 public class Builder : BoardGameComponent
 {
@@ -22,14 +24,21 @@ public class Builder : BoardGameComponent
         }
     }
 
+    ///Values for Y depending on the number of floor a cell have (from 0-1)
     public static readonly float[] sPresetY = { 1.0f, 2.95f, 5.25f, 6.50f };
 
     // Update is called once per frame
     void Update()
     {
-        
+        GameManager lGM = GameManager.sGetInstance();
+
+        if (lGM.getGameState() == GameManager.GameState.PLAY && mCell.getBuildingLevel() == 3)
+        {
+            GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayer);
+        }
     }
 
+    ///get the list of all cells the builder can currently move to
     public List<Cell> getAllCellAvailableForMoving()
     {
         List<Cell> lAvailableCells = new List<Cell>(mCell.mAdjoiningCells);
@@ -37,7 +46,7 @@ public class Builder : BoardGameComponent
         for (int i=0; i< lAvailableCells.Count; ++i)
         {
             Cell lCell = lAvailableCells[i];
-            if(!lCell.mIsFree || lCell.getBuildingLevel()-mCell.getBuildingLevel() >= 2)
+            if(!lCell.mIsFree || lCell.getBuildingLevel()-mCell.getBuildingLevel() >= 2 || lCell.getBuildingLevel() >= 4)
             {
                 lAvailableCells.RemoveAt(i);
                 i--;
@@ -47,7 +56,8 @@ public class Builder : BoardGameComponent
         return lAvailableCells;
     }
 
-    public List<Cell> getAllCellAvailableForBuilding()
+    ///get the list of all cells the builder can currently build on
+    public List<Cell> getAllCellsAvailableForBuilding()
     {
         List<Cell> lAvailableCells = new List<Cell>(mCell.mAdjoiningCells);
 
@@ -64,11 +74,14 @@ public class Builder : BoardGameComponent
         return lAvailableCells;
     }
 
+    ///return true if the builder is currently able to move to the cell as parameter
     private bool isCellAvailableForMoving(Cell pCell)
     {
-        return mCell.mAdjoiningCells.Contains(pCell) && pCell.mIsFree && pCell.getBuildingLevel()-mCell.getBuildingLevel()<2;
+        return mCell.mAdjoiningCells.Contains(pCell) && (pCell.mIsFree && pCell.getBuildingLevel()-mCell.getBuildingLevel()<2) && pCell.getBuildingLevel() < 4;
     }
 
+    ///If the builder is able to move to pCell, do it and return true
+    ///If not, return false
     public bool TryMove(Cell pCell)
     {
         if (!isCellAvailableForMoving(pCell))
@@ -83,7 +96,7 @@ public class Builder : BoardGameComponent
         return true;
     }
 
-    ///Reset the position of the builder based on the position of the cell
+    ///Reset the position of the builder based on the position of its cell and the number of floor it has
     public void UpdatePosition()
     {
         Vector3 lCellPos = mCell.gameObject.transform.position;

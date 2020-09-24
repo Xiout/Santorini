@@ -1526,8 +1526,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac78ad2b5222e7544b41ff2f8d4b0274, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mNbCellsPerRow: 5
-  mNbCellsPerColumn: 5
+  mNbCellsPerRow: 6
+  mNbCellsPerColumn: 6
   mNbPlayers: 2
   mMaterialSelectedObj: {fileID: 2100000, guid: 3ec75d385bcf8664e81457abf3e3ac76,
     type: 2}

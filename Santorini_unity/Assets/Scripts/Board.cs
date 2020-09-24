@@ -15,14 +15,6 @@ public class Board : MonoBehaviour
     public int mNbPlayers;
 
     private int mCurrentPlayer;
-    /*private bool mIsPlacingDone;
-    ///mIsBuildingPhase = true : Building phase
-    ///mIsBuildingPhase = false : Moving phase
-    private bool mIsBuildingPhase;*/
-    ///Placing phase : 0
-    ///Building phase : 1
-    ///Moving phase : 2
-    private int mGamePhase;
 
     ///material assigned for selected object
     public Material mMaterialSelectedObj;
@@ -48,14 +40,9 @@ public class Board : MonoBehaviour
 
     private BoardGameComponent mSelectedBGComp;
 
-    //private List<Cell> mAvailableCells;
-
-    // Start is called before the first frame update
     void Start()
     {
         mCurrentPlayer = 1;
-        //mIsPlacingDone = false;
-        mGamePhase = 0;
         mAllBuilders = new List<Builder>();
         mAllCells = new List<Cell>();
 
@@ -141,207 +128,216 @@ public class Board : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        //Script de base permettant d'afficher le nom de l'objet selectionner
-        if (Input.GetMouseButtonDown(0))
+        GameManager lGM = GameManager.sGetInstance();
+
+        if(lGM.getGameState() == GameManager.GameState.PLAY)
         {
-            Ray lMouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit lMouseRayHit;
-            while (Physics.Raycast(lMouseRay, out lMouseRayHit)) //BREAKABLE
+            //Script de base permettant d'afficher le nom de l'objet selectionner
+            if (Input.GetMouseButtonDown(0))
             {
-                //retrieve the clickedObject
-                GameObject lClickedObject = lMouseRayHit.transform.gameObject;
-                BoardGameComponent lClickedBGComp = lClickedObject.GetComponent<BoardGameComponent>();
-                if(lClickedObject == null) { break;}
-                //TODO : Empecher la selection d'un certain type de composants selon mGamePhase !
-
-                //the click is "confirmed" if the previous selected object is same that the clicked object
-                //in other words, we have to clic twice on the same cell to place a builder on it
-                bool lIsClickConfirmed = false;
-                Renderer lRenderer;
-                Builder lBuilder = null; 
-
-                //the clicked object is different that the currently selected object : the selection change OR an action is performed
-                if (mSelectedBGComp == null || (mSelectedBGComp.gameObject != lClickedBGComp.gameObject))
+                Ray lMouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit lMouseRayHit;
+                while (Physics.Raycast(lMouseRay, out lMouseRayHit)) //BREAKABLE
                 {
-                    if (mGamePhase != 0)
+                    //retrieve the clickedObject
+                    GameObject lClickedObject = lMouseRayHit.transform.gameObject;
+                    BoardGameComponent lClickedBGComp = lClickedObject.GetComponent<BoardGameComponent>();
+                    if (lClickedObject == null) { break; }
+                    //TODO : Empecher la selection d'un certain type de composants selon mGamePhase !
+
+                    //the click is "confirmed" if the previous selected object is same that the clicked object
+                    //in other words, we have to clic twice on the same cell to place a builder on it
+                    bool lIsClickConfirmed = false;
+                    Renderer lRenderer;
+                    Builder lBuilder = null;
+
+                    //the clicked object is different that the currently selected object : the selection change OR an action is performed
+                    if (mSelectedBGComp == null || (mSelectedBGComp.gameObject != lClickedBGComp.gameObject))
                     {
-                        lBuilder = mSelectedBGComp as Builder;
-                        if (lBuilder != null && mAllBuilders.Contains(lBuilder))
+                        if (lGM.GetInGamePhase() != 0)
                         {
-                            //A builder was selected previously
-                            Cell lClickedCell = lClickedBGComp as Cell;
-                            if(lClickedCell != null && mAllCells.Contains(lClickedCell))
+                            lBuilder = mSelectedBGComp as Builder;
+                            if (lBuilder != null && mAllBuilders.Contains(lBuilder))
                             {
-                                //The just clicked object is a cell  
-                                if (mGamePhase == 1)
+                                //A builder was selected previously
+                                Cell lClickedCell = lClickedBGComp as Cell;
+                                if (lClickedCell != null && mAllCells.Contains(lClickedCell))
                                 {
-                                    //MOVE
-                                    Cell lPrevCell = lBuilder.mCell;
-                                    if (lBuilder.TryMove(lClickedCell))
+                                    //The just clicked object is a cell  
+                                    if (lGM.GetInGamePhase() == 1)
                                     {
-                                        //changing to building phase
-                                        mGamePhase = 2;
-
-                                        //reset the default material on all adjoning cells of the Builder's previous cell
-                                        for (int i = 0; i < lPrevCell.mAdjoiningCells.Count; ++i)
+                                        //MOVE
+                                        Cell lPrevCell = lBuilder.mCell;
+                                        if (lBuilder.TryMove(lClickedCell))
                                         {
-                                            lRenderer = lPrevCell.mAdjoiningCells[i].gameObject.GetComponent<Renderer>();
-                                            lRenderer.enabled = true;
-                                            lRenderer.sharedMaterial = lPrevCell.mAdjoiningCells[i].getDefaultMaterial();
-                                        }
+                                            //changing to building phase
+                                            //mGamePhase = 2;
+                                            lGM.mMovingEvent.Invoke();
 
-                                        //Painting cells for building
-                                        List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForBuilding();
-                                        for (int i = 0; i < lAvailableCells.Count; ++i)
-                                        {
-                                            lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                            lRenderer.enabled = true;
-                                            lRenderer.sharedMaterial = mMaterialSelectedObj;
-                                        }
+                                            //reset the default material on all adjoning cells of the Builder's previous cell
+                                            for (int i = 0; i < lPrevCell.mAdjoiningCells.Count; ++i)
+                                            {
+                                                lRenderer = lPrevCell.mAdjoiningCells[i].gameObject.GetComponent<Renderer>();
+                                                lRenderer.enabled = true;
+                                                lRenderer.sharedMaterial = lPrevCell.mAdjoiningCells[i].getDefaultMaterial();
+                                            }
 
-                                        //the builder stay selected for the building phase
+                                            //Painting cells for building
+                                            List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
+                                            for (int i = 0; i < lAvailableCells.Count; ++i)
+                                            {
+                                                lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
+                                                lRenderer.enabled = true;
+                                                lRenderer.sharedMaterial = mMaterialSelectedObj;
+                                            }
+
+                                            //the builder stay selected for the building phase
+                                        }
+                                        break;
                                     }
-                                    break;
-                                }
 
-                                if (mGamePhase == 2)
-                                {
-                                    //BUILD
-                                    Debug.Log("BUILDING PHASE");
-                                    if (lClickedCell.build())
+                                    if (lGM.GetInGamePhase() == 2)
                                     {
-                                        //generation of the building
-                                        GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.getBuildingLevel()-1], lClickedCell.transform.position, new Quaternion());
-                                        building.transform.SetParent(lClickedCell.transform);
-
-                                        //reset the default material on all available for build cells
-                                        List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForBuilding();
-                                        for (int i = 0; i < lAvailableCells.Count; ++i)
+                                        //BUILD
+                                        Debug.Log("BUILDING PHASE");
+                                        if (lClickedCell.TryBuild())
                                         {
-                                            lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                            lRenderer.enabled = true;
-                                            lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
-                                        }
-                                        //deselect the current builder
-                                        lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                                        lRenderer.enabled = true;
-                                        lRenderer.sharedMaterial = mSelectedBGComp.getDefaultMaterial();
-                                        mSelectedBGComp = null;
+                                            //generation of the building
+                                            GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.getBuildingLevel() - 1], lClickedCell.transform.position, new Quaternion());
+                                            building.transform.SetParent(lClickedCell.transform);
 
-                                        //change of game phase and turn
-                                        mGamePhase = 1;
-                                        mCurrentPlayer = (mCurrentPlayer + 1) % mNbPlayers;
+                                            //reset the default material on all available for build cells
+                                            List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
+                                            for (int i = 0; i < lAvailableCells.Count; ++i)
+                                            {
+                                                lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
+                                                lRenderer.enabled = true;
+                                                lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
+                                            }
+                                            //deselect the current builder
+                                            lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
+                                            lRenderer.enabled = true;
+                                            lRenderer.sharedMaterial = mSelectedBGComp.getDefaultMaterial();
+                                            mSelectedBGComp = null;
+
+                                            //change of game phase and turn
+                                            //mGamePhase = 1;
+                                            lGM.mBuildingEvent.Invoke();
+                                            mCurrentPlayer = (mCurrentPlayer + 1) % mNbPlayers;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    //The selection can't change during the building phase.
-                    if (mGamePhase == 2)
-                    {
-                        break;
-                    }
-
-                    //THE SELECTION CHANGE 
-                    //This part is for reassign the original material the previously clicked object
-                    lRenderer = null;
-                    if (mSelectedBGComp != null)
-                    {
-                        lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                        lRenderer.enabled = true;
-                        //lRenderer.sharedMaterial = mPreviousMaterialSelectedObj;
-                        lRenderer.sharedMaterial = mSelectedBGComp.GetComponent<BoardGameComponent>().getDefaultMaterial();
-                    }
-
-                    //We also reset material of the previous "Available Cells"
-                    //(available cells are cells available for a builder to move or build on)
-                    lBuilder = mSelectedBGComp as Builder;
-                    if(lBuilder != null && mAllBuilders.Contains(lBuilder))
-                    {
-                        List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForMoving();
-                        for (int i = 0; i < lAvailableCells.Count; ++i)
+                        //The selection can't change during the building phase.
+                        if (lGM.GetInGamePhase() == 2)
                         {
-                            lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
+                            break;
+                        }
+
+                        //THE SELECTION CHANGE 
+                        //This part is for reassign the original material the previously clicked object
+                        lRenderer = null;
+                        if (mSelectedBGComp != null)
+                        {
+                            lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
                             lRenderer.enabled = true;
-                            lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
-                        }
-                    }
-                   
-
-                    //the currently selected object is now the object we just clicked
-                    mSelectedBGComp = lClickedBGComp;
-
-                    //in order to distinguish the selected objet from the other, we change its material 
-                    lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                    lRenderer.enabled = true;
-                    //mPreviousMaterialSelectedObj = lRenderer.sharedMaterial;
-                    lRenderer.sharedMaterial = mMaterialSelectedObj;
-                }else{
-                    lIsClickConfirmed = true;
-                }
-
-                //Builders placing phase
-                if (mGamePhase == 0)
-                {
-                    Cell lSelectedCell = mSelectedBGComp as Cell;
-                    if (lIsClickConfirmed && mAllCells.Contains(lSelectedCell))
-                    {
-                        Debug.Log("PLACING PHASE : player " + mCurrentPlayer+"'s turn");
-                        //Instanciate and name the builder
-                        GameObject lBuilderObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                        lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / mNbPlayers)) + "_p"+ mCurrentPlayer;
-                        //create the Builder script
-                        Builder lBuilderScr = lBuilderObj.AddComponent<Builder>();
-                        //declare its player owner
-                        lBuilderScr.mPlayer = mCurrentPlayer;
-                        //declare its location
-                        lBuilderScr.mCell = lSelectedCell;
-
-                        lRenderer = lBuilderObj.GetComponent<Renderer>();
-                        if (lBuilderScr.setDefaultMaterial(mPlayersMaterial[mCurrentPlayer]))
-                        {
-                            lRenderer.enabled = true;
-                            lRenderer.sharedMaterial = mPlayersMaterial[mCurrentPlayer];
+                            //lRenderer.sharedMaterial = mPreviousMaterialSelectedObj;
+                            lRenderer.sharedMaterial = mSelectedBGComp.GetComponent<BoardGameComponent>().getDefaultMaterial();
                         }
 
-                        //declare the cell as occupied
-                        Cell mCellScr = lBuilderScr.mCell;
-                        mCellScr.mIsFree = false;
-                        
-                        mAllBuilders.Add(lBuilderScr);
-
-                        mCurrentPlayer = ((mCurrentPlayer + 1) % mNbPlayers);
-                        if(mAllBuilders.Count >= mNbPlayers * 2)
+                        //We also reset material of the previous "Available Cells"
+                        //(available cells are cells available for a builder to move or build on)
+                        lBuilder = mSelectedBGComp as Builder;
+                        if (lBuilder != null && mAllBuilders.Contains(lBuilder))
                         {
-                            mGamePhase = 1;
-                        }
-                    }
-                }
-                else
-                {
-                    if (mGamePhase == 1)
-                    {
-                        //Moving phase
-                        Debug.Log("MOVING PHASE");
-                        Builder lSelectedBuilder = mSelectedBGComp as Builder;
-                        if (mAllBuilders.Contains(lSelectedBuilder))
-                        {
-                            List<Cell> lAvailableCells = lSelectedBuilder.getAllCellAvailableForMoving();
+                            List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForMoving();
                             for (int i = 0; i < lAvailableCells.Count; ++i)
                             {
                                 lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
                                 lRenderer.enabled = true;
-                                lRenderer.sharedMaterial = mMaterialSelectedObj;
+                                lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
+                            }
+                        }
+
+
+                        //the currently selected object is now the object we just clicked
+                        mSelectedBGComp = lClickedBGComp;
+
+                        //in order to distinguish the selected objet from the other, we change its material 
+                        lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
+                        lRenderer.enabled = true;
+                        //mPreviousMaterialSelectedObj = lRenderer.sharedMaterial;
+                        lRenderer.sharedMaterial = mMaterialSelectedObj;
+                    }
+                    else
+                    {
+                        lIsClickConfirmed = true;
+                    }
+
+                    //Builders placing phase
+                    if (lGM.GetInGamePhase() == 0)
+                    {
+                        Cell lSelectedCell = mSelectedBGComp as Cell;
+                        if (lIsClickConfirmed && mAllCells.Contains(lSelectedCell))
+                        {
+                            Debug.Log("PLACING PHASE : player " + mCurrentPlayer + "'s turn");
+                            //Instanciate and name the builder
+                            GameObject lBuilderObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                            lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / mNbPlayers)) + "_p" + mCurrentPlayer;
+                            //create the Builder script
+                            Builder lBuilderScr = lBuilderObj.AddComponent<Builder>();
+                            //declare its player owner
+                            lBuilderScr.mPlayer = mCurrentPlayer;
+                            //declare its location
+                            lBuilderScr.mCell = lSelectedCell;
+
+                            lRenderer = lBuilderObj.GetComponent<Renderer>();
+                            if (lBuilderScr.setDefaultMaterial(mPlayersMaterial[mCurrentPlayer]))
+                            {
+                                lRenderer.enabled = true;
+                                lRenderer.sharedMaterial = mPlayersMaterial[mCurrentPlayer];
+                            }
+
+                            //declare the cell as occupied
+                            Cell mCellScr = lBuilderScr.mCell;
+                            mCellScr.mIsFree = false;
+
+                            mAllBuilders.Add(lBuilderScr);
+
+                            mCurrentPlayer = ((mCurrentPlayer + 1) % mNbPlayers);
+                            if (mAllBuilders.Count >= mNbPlayers * 2)
+                            {
+                                //mGamePhase = 1;
+                                lGM.mPlacingEvent.Invoke();
                             }
                         }
                     }
+                    else
+                    {
+                        if (lGM.GetInGamePhase() == 1)
+                        {
+                            //Moving phase
+                            Debug.Log("MOVING PHASE");
+                            Builder lSelectedBuilder = mSelectedBGComp as Builder;
+                            if (mAllBuilders.Contains(lSelectedBuilder))
+                            {
+                                List<Cell> lAvailableCells = lSelectedBuilder.getAllCellAvailableForMoving();
+                                for (int i = 0; i < lAvailableCells.Count; ++i)
+                                {
+                                    lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
+                                    lRenderer.enabled = true;
+                                    lRenderer.sharedMaterial = mMaterialSelectedObj;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 }
-                break;
             }
-        }
+        }//End of if GameState = PLAY
     }
 }

@@ -20,18 +20,15 @@ public class Cell : BoardGameComponent
         mBuildingLevel = 0;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
+    /// getter of the number of floor the cell currently have
     public int getBuildingLevel()
     {
         return mBuildingLevel;
     }
 
-    public bool build()
+    ///If it's possible to build on this cell, do it and return true
+    ///If not, return false
+    public bool TryBuild()
     {
         if(mBuildingLevel<4 && mIsFree)
         {
