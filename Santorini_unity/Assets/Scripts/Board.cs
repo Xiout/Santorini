@@ -11,8 +11,6 @@ public class Board : MonoBehaviour
     public int mNbCellsPerRow;
     ///dimension Z of the board
     public int mNbCellsPerColumn;
-    ///number of players
-    public int mNbPlayers;
 
     private int mCurrentPlayer;
 
@@ -27,7 +25,7 @@ public class Board : MonoBehaviour
     public Material mCellMaterial;
     ///players' builder material
     ///the size of this list MUST be equal to mNbPlayers
-    public List<Material> mPlayersMaterial;
+    //public List<Material> mPlayersMaterial;
 
     public List<GameObject> mBuildingPrefabs;
 
@@ -225,7 +223,7 @@ public class Board : MonoBehaviour
                                             //change of game phase and turn
                                             //mGamePhase = 1;
                                             lGM.mBuildingEvent.Invoke();
-                                            mCurrentPlayer = (mCurrentPlayer + 1) % mNbPlayers;
+                                            mCurrentPlayer = (mCurrentPlayer + 1) % lGM.getNbPlayers();
                                         }
                                     }
                                 }
@@ -287,7 +285,7 @@ public class Board : MonoBehaviour
                             Debug.Log("PLACING PHASE : player " + mCurrentPlayer + "'s turn");
                             //Instanciate and name the builder
                             GameObject lBuilderObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                            lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / mNbPlayers)) + "_p" + mCurrentPlayer;
+                            lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / lGM.getNbPlayers())) + "_p" + mCurrentPlayer;
                             //create the Builder script
                             Builder lBuilderScr = lBuilderObj.AddComponent<Builder>();
                             //declare its player owner
@@ -296,10 +294,10 @@ public class Board : MonoBehaviour
                             lBuilderScr.mCell = lSelectedCell;
 
                             lRenderer = lBuilderObj.GetComponent<Renderer>();
-                            if (lBuilderScr.setDefaultMaterial(mPlayersMaterial[mCurrentPlayer]))
+                            if (lBuilderScr.setDefaultMaterial(lGM.mPlayersMaterial[mCurrentPlayer]))
                             {
                                 lRenderer.enabled = true;
-                                lRenderer.sharedMaterial = mPlayersMaterial[mCurrentPlayer];
+                                lRenderer.sharedMaterial = lGM.mPlayersMaterial[mCurrentPlayer];
                             }
 
                             //declare the cell as occupied
@@ -308,8 +306,8 @@ public class Board : MonoBehaviour
 
                             mAllBuilders.Add(lBuilderScr);
 
-                            mCurrentPlayer = ((mCurrentPlayer + 1) % mNbPlayers);
-                            if (mAllBuilders.Count >= mNbPlayers * 2)
+                            mCurrentPlayer = ((mCurrentPlayer + 1) % lGM.getNbPlayers());
+                            if (mAllBuilders.Count >= lGM.getNbPlayers() * 2)
                             {
                                 //mGamePhase = 1;
                                 lGM.mPlacingEvent.Invoke();
