@@ -200,31 +200,35 @@ public class Board : MonoBehaviour
                                     {
                                         //BUILD
                                         Debug.Log("BUILDING PHASE");
-                                        if (lClickedCell.TryBuild())
+                                        Builder lSelectedBuilder = mSelectedBGComp as Builder;
+                                        if (lSelectedBuilder != null && lSelectedBuilder.getAllCellsAvailableForBuilding().Contains(lClickedCell))
                                         {
-                                            //generation of the building
-                                            GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.getBuildingLevel() - 1], lClickedCell.transform.position, new Quaternion());
-                                            building.transform.SetParent(lClickedCell.transform);
-
-                                            //reset the default material on all available for build cells
-                                            List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
-                                            for (int i = 0; i < lAvailableCells.Count; ++i)
+                                            if (lClickedCell.TryBuild())
                                             {
-                                                lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                                lRenderer.enabled = true;
-                                                lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
-                                            }
-                                            //deselect the current builder
-                                            lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                                            lRenderer.enabled = true;
-                                            lRenderer.sharedMaterial = mSelectedBGComp.getDefaultMaterial();
-                                            mSelectedBGComp = null;
+                                                //generation of the building
+                                                GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.getBuildingLevel() - 1], lClickedCell.transform.position, new Quaternion());
+                                                building.transform.SetParent(lClickedCell.transform);
 
-                                            //change of game phase and turn
-                                            //mGamePhase = 1;
-                                            lGM.mBuildingEvent.Invoke();
-                                            mCurrentPlayer = (mCurrentPlayer + 1) % lGM.getNbPlayers();
-                                        }
+                                                //reset the default material on all available for build cells
+                                                List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
+                                                for (int i = 0; i < lAvailableCells.Count; ++i)
+                                                {
+                                                    lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
+                                                    lRenderer.enabled = true;
+                                                    lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
+                                                }
+                                                //deselect the current builder
+                                                lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
+                                                lRenderer.enabled = true;
+                                                lRenderer.sharedMaterial = mSelectedBGComp.getDefaultMaterial();
+                                                mSelectedBGComp = null;
+
+                                                //change of game phase and turn
+                                                //mGamePhase = 1;
+                                                lGM.mBuildingEvent.Invoke();
+                                                mCurrentPlayer = (mCurrentPlayer + 1) % lGM.getNbPlayers();
+                                            }
+                                        } 
                                     }
                                 }
                             }
@@ -237,39 +241,51 @@ public class Board : MonoBehaviour
                         }
 
                         //THE SELECTION CHANGE 
-                        //This part is for reassign the original material the previously clicked object
-                        lRenderer = null;
-                        if (mSelectedBGComp != null)
+   
+                        Builder lClickedBuilder = lClickedBGComp as Builder;
+                        if (lGM.GetInGamePhase() != 1 || (lClickedBuilder != null && lClickedBuilder.mPlayer == mCurrentPlayer))
                         {
+                            //This part is for reassign the original material the previously clicked object
+                            lRenderer = null;
+                            if (mSelectedBGComp != null)
+                            {
+                                lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
+                                lRenderer.enabled = true;
+                                //lRenderer.sharedMaterial = mPreviousMaterialSelectedObj;
+                                lRenderer.sharedMaterial = mSelectedBGComp.GetComponent<BoardGameComponent>().getDefaultMaterial();
+                            }
+
+                            //We also reset material of the previous "Available Cells"
+                            //(available cells are cells available for a builder to move or build on)
+                            lBuilder = mSelectedBGComp as Builder;
+                            if (lBuilder != null && mAllBuilders.Contains(lBuilder))
+                            {
+                                List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForMoving();
+                                for (int i = 0; i < lAvailableCells.Count; ++i)
+                                {
+                                    lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
+                                    lRenderer.enabled = true;
+                                    lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
+                                }
+                            }
+
+
+                            Cell lClickedCell = lClickedBGComp as Cell;
+                            if (lGM.GetInGamePhase() == 0 && (lClickedCell == null || !lClickedCell.mIsFree))
+                            {
+                                mSelectedBGComp = null;
+                                return;
+                            }
+
+                            //the currently selected object is now the object we just clicked
+                            mSelectedBGComp = lClickedBGComp;
+
+                            //in order to distinguish the selected objet from the other, we change its material 
                             lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
                             lRenderer.enabled = true;
-                            //lRenderer.sharedMaterial = mPreviousMaterialSelectedObj;
-                            lRenderer.sharedMaterial = mSelectedBGComp.GetComponent<BoardGameComponent>().getDefaultMaterial();
+                            //mPreviousMaterialSelectedObj = lRenderer.sharedMaterial;
+                            lRenderer.sharedMaterial = mMaterialSelectedObj;
                         }
-
-                        //We also reset material of the previous "Available Cells"
-                        //(available cells are cells available for a builder to move or build on)
-                        lBuilder = mSelectedBGComp as Builder;
-                        if (lBuilder != null && mAllBuilders.Contains(lBuilder))
-                        {
-                            List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForMoving();
-                            for (int i = 0; i < lAvailableCells.Count; ++i)
-                            {
-                                lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                lRenderer.enabled = true;
-                                lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
-                            }
-                        }
-
-
-                        //the currently selected object is now the object we just clicked
-                        mSelectedBGComp = lClickedBGComp;
-
-                        //in order to distinguish the selected objet from the other, we change its material 
-                        lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                        lRenderer.enabled = true;
-                        //mPreviousMaterialSelectedObj = lRenderer.sharedMaterial;
-                        lRenderer.sharedMaterial = mMaterialSelectedObj;
                     }
                     else
                     {
@@ -312,6 +328,13 @@ public class Board : MonoBehaviour
                                 //mGamePhase = 1;
                                 lGM.mPlacingEvent.Invoke();
                             }
+
+                            //reinitialisation of the aspect of the cell
+                            lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
+                            lRenderer.enabled = true;
+                            lRenderer.sharedMaterial = mSelectedBGComp.GetComponent<BoardGameComponent>().getDefaultMaterial();
+                            //the selection is reset to null
+                            mSelectedBGComp = null;
                         }
                     }
                     else

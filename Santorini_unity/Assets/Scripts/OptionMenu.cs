@@ -10,7 +10,7 @@ public class OptionMenu : MonoBehaviour
     public Button mBttLessPlayers, mBttMorePlayers;
     public List<Material> mAllMaterialForPlayers;
 
-    void Start()
+    void Awake()
     {
         GameManager lGM = GameManager.sGetInstance();
         for (int i=0; i<mLinePlayers.Count; ++i)

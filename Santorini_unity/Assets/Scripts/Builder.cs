@@ -80,6 +80,12 @@ public class Builder : BoardGameComponent
         return mCell.mAdjoiningCells.Contains(pCell) && (pCell.mIsFree && pCell.getBuildingLevel()-mCell.getBuildingLevel()<2) && pCell.getBuildingLevel() < 4;
     }
 
+    ///return true if the builder is currently able to move to the cell as parameter
+    private bool isCellAvailableForBuilding(Cell pCell)
+    {
+        return mCell.mAdjoiningCells.Contains(pCell) && (pCell.mIsFree  && pCell.getBuildingLevel() < 4);
+    }
+
     ///If the builder is able to move to pCell, do it and return true
     ///If not, return false
     public bool TryMove(Cell pCell)
