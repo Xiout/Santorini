@@ -37,4 +37,24 @@ public class Cell : BoardGameComponent
         }
         return false;
     }
+
+    public void ClearCell()
+    {
+        mIsFree = true;
+
+        //Remove all buildingLevel
+        //while (transform.childCount > 0)
+        for(int i=0; i<transform.childCount; ++i)
+        {
+            Debug.Log("Detroy " + gameObject.name +" "+ transform.GetChild(0).name);
+            Destroy(transform.GetChild(i).gameObject);
+        }
+
+        mBuildingLevel = 0;
+
+        //reset material
+        Renderer lRenderer = gameObject.GetComponent<Renderer>();
+        lRenderer.enabled = true;
+        lRenderer.sharedMaterial = getDefaultMaterial();
+    }
 }

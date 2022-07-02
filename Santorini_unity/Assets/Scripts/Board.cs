@@ -130,6 +130,13 @@ public class Board : MonoBehaviour
     {
         GameManager lGM = GameManager.sGetInstance();
 
+        if (lGM.getGameState() == GameManager.GameState.RESET)
+        {
+            ClearBoard();
+            Debug.Log("Board Cleared Sucessfully");
+            lGM.mBoardResetEvent.Invoke();
+        }
+
         if(lGM.getGameState() == GameManager.GameState.PLAY)
         {
             //Script de base permettant d'afficher le nom de l'objet selectionner
@@ -360,5 +367,24 @@ public class Board : MonoBehaviour
                 }
             }
         }//End of if GameState = PLAY
+    }
+
+    private void ClearBoard()
+    {
+        //Clear Builders
+        while(mAllBuilders.Count>0)
+        {
+            Debug.Log("Destroy " + mAllBuilders[0].gameObject.name);
+            Builder currentBuilder = mAllBuilders[0];
+            mAllBuilders.RemoveAt(0);
+            Destroy(currentBuilder.gameObject);
+        }
+
+        //Clear Cells
+        for (int iCell = 0; iCell < mAllCells.Count; ++iCell)
+        {
+            Debug.Log("Clear " + mAllCells[iCell].gameObject.name);
+            mAllCells[iCell].ClearCell();
+        }
     }
 }
