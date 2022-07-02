@@ -49,12 +49,8 @@ public class Cell : BoardGameComponent
             Debug.Log("Detroy " + gameObject.name +" "+ transform.GetChild(0).name);
             Destroy(transform.GetChild(i).gameObject);
         }
-
         mBuildingLevel = 0;
 
-        //reset material
-        Renderer lRenderer = gameObject.GetComponent<Renderer>();
-        lRenderer.enabled = true;
-        lRenderer.sharedMaterial = getDefaultMaterial();
+        ResetMaterial();
     }
 }

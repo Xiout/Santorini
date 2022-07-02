@@ -17,10 +17,6 @@ public class Board : MonoBehaviour
     ///material assigned for selected object
     public Material mMaterialSelectedObj;
 
-    /*///material of the selected object just before it was selected
-    ///(used to reset its own material after being deselected)
-    private Material mPreviousMaterialSelectedObj;*/
-
     ///cell material 
     public Material mCellMaterial;
     ///players' builder material
@@ -114,11 +110,9 @@ public class Board : MonoBehaviour
                 mAllCells.Add(lCellScr);
                 lCellObj.transform.SetParent(lRowObj.transform);
 
-                Renderer lRenderer = lCellObj.GetComponent<Renderer>();
                 if (lCellScr.setDefaultMaterial(mCellMaterial))
                 {
-                    lRenderer.enabled = true;
-                    lRenderer.sharedMaterial = mCellMaterial;
+                    lCellScr.ApplyMaterial(mCellMaterial);
                 }
             }
             lRowObj.transform.SetParent(gameObject.transform);
@@ -150,12 +144,11 @@ public class Board : MonoBehaviour
                     GameObject lClickedObject = lMouseRayHit.transform.gameObject;
                     BoardGameComponent lClickedBGComp = lClickedObject.GetComponent<BoardGameComponent>();
                     if (lClickedObject == null) { break; }
-                    //TODO : Empecher la selection d'un certain type de composants selon mGamePhase !
 
                     //the click is "confirmed" if the previous selected object is same that the clicked object
                     //in other words, we have to clic twice on the same cell to place a builder on it
                     bool lIsClickConfirmed = false;
-                    Renderer lRenderer;
+
                     Builder lBuilder = null;
 
                     //the clicked object is different that the currently selected object : the selection change OR an action is performed
@@ -184,18 +177,14 @@ public class Board : MonoBehaviour
                                             //reset the default material on all adjoning cells of the Builder's previous cell
                                             for (int i = 0; i < lPrevCell.mAdjoiningCells.Count; ++i)
                                             {
-                                                lRenderer = lPrevCell.mAdjoiningCells[i].gameObject.GetComponent<Renderer>();
-                                                lRenderer.enabled = true;
-                                                lRenderer.sharedMaterial = lPrevCell.mAdjoiningCells[i].getDefaultMaterial();
+                                                lPrevCell.mAdjoiningCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
                                             }
 
                                             //Painting cells for building
                                             List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
                                             for (int i = 0; i < lAvailableCells.Count; ++i)
                                             {
-                                                lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                                lRenderer.enabled = true;
-                                                lRenderer.sharedMaterial = mMaterialSelectedObj;
+                                                lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
                                             }
 
                                             //the builder stay selected for the building phase
@@ -220,18 +209,15 @@ public class Board : MonoBehaviour
                                                 List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
                                                 for (int i = 0; i < lAvailableCells.Count; ++i)
                                                 {
-                                                    lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                                    lRenderer.enabled = true;
-                                                    lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
+                                                    lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ResetMaterial();
                                                 }
                                                 //deselect the current builder
-                                                lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                                                lRenderer.enabled = true;
-                                                lRenderer.sharedMaterial = mSelectedBGComp.getDefaultMaterial();
+                                                mSelectedBGComp.GetComponent<BoardGameComponent>().ResetMaterial();
                                                 mSelectedBGComp = null;
 
                                                 //change of game phase and turn
                                                 //mGamePhase = 1;
+                                                lClickedCell.GetComponent<BoardGameComponent>().ResetMaterial();
                                                 lGM.mBuildingEvent.Invoke();
                                                 mCurrentPlayer = (mCurrentPlayer + 1) % lGM.getNbPlayers();
                                             }
@@ -253,13 +239,9 @@ public class Board : MonoBehaviour
                         if (lGM.GetInGamePhase() != 1 || (lClickedBuilder != null && lClickedBuilder.mPlayer == mCurrentPlayer))
                         {
                             //This part is for reassign the original material the previously clicked object
-                            lRenderer = null;
                             if (mSelectedBGComp != null)
                             {
-                                lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                                lRenderer.enabled = true;
-                                //lRenderer.sharedMaterial = mPreviousMaterialSelectedObj;
-                                lRenderer.sharedMaterial = mSelectedBGComp.GetComponent<BoardGameComponent>().getDefaultMaterial();
+                                mSelectedBGComp.gameObject.GetComponent<BoardGameComponent>().ResetMaterial();
                             }
 
                             //We also reset material of the previous "Available Cells"
@@ -270,9 +252,7 @@ public class Board : MonoBehaviour
                                 List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForMoving();
                                 for (int i = 0; i < lAvailableCells.Count; ++i)
                                 {
-                                    lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                    lRenderer.enabled = true;
-                                    lRenderer.sharedMaterial = lAvailableCells[i].getDefaultMaterial();
+                                    lAvailableCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
                                 }
                             }
 
@@ -288,10 +268,7 @@ public class Board : MonoBehaviour
                             mSelectedBGComp = lClickedBGComp;
 
                             //in order to distinguish the selected objet from the other, we change its material 
-                            lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                            lRenderer.enabled = true;
-                            //mPreviousMaterialSelectedObj = lRenderer.sharedMaterial;
-                            lRenderer.sharedMaterial = mMaterialSelectedObj;
+                            mSelectedBGComp.gameObject.GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
                         }
                     }
                     else
@@ -316,11 +293,9 @@ public class Board : MonoBehaviour
                             //declare its location
                             lBuilderScr.mCell = lSelectedCell;
 
-                            lRenderer = lBuilderObj.GetComponent<Renderer>();
                             if (lBuilderScr.setDefaultMaterial(lGM.mPlayersMaterial[mCurrentPlayer]))
                             {
-                                lRenderer.enabled = true;
-                                lRenderer.sharedMaterial = lGM.mPlayersMaterial[mCurrentPlayer];
+                                lBuilderScr.ApplyMaterial(lGM.mPlayersMaterial[mCurrentPlayer]);
                             }
 
                             //declare the cell as occupied
@@ -337,10 +312,7 @@ public class Board : MonoBehaviour
                             }
 
                             //reinitialisation of the aspect of the cell
-                            lRenderer = mSelectedBGComp.gameObject.GetComponent<Renderer>();
-                            lRenderer.enabled = true;
-                            lRenderer.sharedMaterial = mSelectedBGComp.GetComponent<BoardGameComponent>().getDefaultMaterial();
-                            //the selection is reset to null
+                            mSelectedBGComp.gameObject.GetComponent<BoardGameComponent>().ResetMaterial();
                             mSelectedBGComp = null;
                         }
                     }
@@ -356,9 +328,7 @@ public class Board : MonoBehaviour
                                 List<Cell> lAvailableCells = lSelectedBuilder.getAllCellAvailableForMoving();
                                 for (int i = 0; i < lAvailableCells.Count; ++i)
                                 {
-                                    lRenderer = lAvailableCells[i].gameObject.GetComponent<Renderer>();
-                                    lRenderer.enabled = true;
-                                    lRenderer.sharedMaterial = mMaterialSelectedObj;
+                                    lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
                                 }
                             }
                         }

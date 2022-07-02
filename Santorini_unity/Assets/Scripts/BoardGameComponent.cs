@@ -26,4 +26,17 @@ public class BoardGameComponent : MonoBehaviour
         }
         return false;
     }
+
+    //Set material of the BoardGameComponent as its mDefaultMaterial
+    public void ResetMaterial()
+    {
+        ApplyMaterial(mDefaultMaterial);
+    }
+
+    public void ApplyMaterial(Material pMat)
+    {
+        Renderer lRenderer = gameObject.GetComponent<Renderer>();
+        lRenderer.enabled = true;
+        lRenderer.sharedMaterial = pMat;
+    }
 }

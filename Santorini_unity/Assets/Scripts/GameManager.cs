@@ -28,8 +28,8 @@ public class GameManager
     private GameState mCurrentState;
 
     ///Placing phase : 0
-    ///Building phase : 1
-    ///Moving phase : 2
+    ///Moving phase : 1
+    ///Building phase : 2
     private int mInGamePhase;
 
     private int mNbPlayers;
