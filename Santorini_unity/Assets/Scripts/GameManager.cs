@@ -13,6 +13,8 @@ public class GameManager
     public class MovingPhaseCompletedEvent : UnityEvent{}
     //Event building phase complete
     public class BuildingPhaseCompletedEvent : UnityEvent{}
+    //Event Turn Completed
+    public class TurnCompletedEvent : UnityEvent<int>{}
     //Event Victory
     public class VictoryEvent : UnityEvent<int>{}
     //Event Board Reset
@@ -39,10 +41,13 @@ public class GameManager
     ///the size of this list MUST be equal to mNbPlayers
     public List<Material> mPlayersMaterial;
 
+    private int mCurrentPlayer;
+
     //Events
     public PlacingPhaseCompletedEvent mPlacingEvent;
     public MovingPhaseCompletedEvent mMovingEvent;
     public BuildingPhaseCompletedEvent mBuildingEvent;
+    public TurnCompletedEvent mTurnCompleted;
     public VictoryEvent mVictoryEvent;
     public BoardResetEvent mBoardResetEvent;
     public ModificationNbPlayersEvent mModNbPlayersEvent;
@@ -64,6 +69,9 @@ public class GameManager
 
             sInstance.mBuildingEvent = new BuildingPhaseCompletedEvent();
             sInstance.mBuildingEvent.AddListener(sInstance.buildingPhaseCompleted);
+
+            sInstance.mTurnCompleted = new TurnCompletedEvent();
+            sInstance.mTurnCompleted.AddListener(sInstance.turnCompleted);
 
             sInstance.mVictoryEvent = new VictoryEvent();
             sInstance.mVictoryEvent.AddListener(sInstance.Victory);
@@ -89,6 +97,11 @@ public class GameManager
     public int getNbPlayers()
     {
         return mNbPlayers;
+    }
+
+    public int getCurrentPlayer()
+    {
+        return mCurrentPlayer;
     }
 
     private void addPlayers(int pNb)
@@ -121,6 +134,12 @@ public class GameManager
         mInGamePhase = 1;
     }
 
+    private void turnCompleted(int pNextPlayer)
+    {
+        mCurrentPlayer = pNextPlayer;
+        mMenuGO.GetComponent<MainMenu>().mInGame.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
+    }
+
     private void startGame()
     {
         mCurrentState = GameState.PLAY;
@@ -129,14 +148,24 @@ public class GameManager
 
     public void Play()
     {
+        //By default, the game state is RESET so in case of Replay, the board is cleared and the game state is updated to PLAY after
         mCurrentState = GameState.RESET; 
+
+        //Hide Menu, display In-Game UI
         mMenuGO.SetActive(false);
         mMenuGO.GetComponent<MainMenu>().mVictory.SetActive(false);
+        mMenuGO.GetComponent<MainMenu>().mInGame.SetActive(true);
+
+        //Set First Player
+        mCurrentPlayer = 0;
+        mMenuGO.GetComponent<MainMenu>().mInGame.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
     }
 
     private void Victory(int pIdWinner)
     {
-		string lStrVictory = $"PLAYER {pIdWinner} WON !";
+        mMenuGO.GetComponent<MainMenu>().mInGame.SetActive(false);
+
+        string lStrVictory = $"PLAYER {pIdWinner+1} WON !";
         Debug.Log(lStrVictory);
 		
 		mCurrentState = GameState.VICTORY;

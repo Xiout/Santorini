@@ -12,8 +12,6 @@ public class Board : MonoBehaviour
     ///dimension Z of the board
     public int mNbCellsPerColumn;
 
-    private int mCurrentPlayer;
-
     ///material assigned for selected object
     public Material mMaterialSelectedObj;
 
@@ -36,7 +34,6 @@ public class Board : MonoBehaviour
 
     void Start()
     {
-        mCurrentPlayer = 1;
         mAllBuilders = new List<Builder>();
         mAllCells = new List<Cell>();
 
@@ -123,6 +120,7 @@ public class Board : MonoBehaviour
     void Update()
     {
         GameManager lGM = GameManager.sGetInstance();
+        int lCurrentPlayer = lGM.getCurrentPlayer();
 
         if (lGM.getGameState() == GameManager.GameState.RESET)
         {
@@ -219,7 +217,7 @@ public class Board : MonoBehaviour
                                                 //mGamePhase = 1;
                                                 lClickedCell.GetComponent<BoardGameComponent>().ResetMaterial();
                                                 lGM.mBuildingEvent.Invoke();
-                                                mCurrentPlayer = (mCurrentPlayer + 1) % lGM.getNbPlayers();
+                                                lGM.mTurnCompleted.Invoke((lCurrentPlayer + 1) % lGM.getNbPlayers());
                                             }
                                         } 
                                     }
@@ -236,7 +234,7 @@ public class Board : MonoBehaviour
                         //THE SELECTION CHANGE 
    
                         Builder lClickedBuilder = lClickedBGComp as Builder;
-                        if (lGM.GetInGamePhase() != 1 || (lClickedBuilder != null && lClickedBuilder.mPlayer == mCurrentPlayer))
+                        if (lGM.GetInGamePhase() != 1 || (lClickedBuilder != null && lClickedBuilder.mPlayer == lCurrentPlayer))
                         {
                             //This part is for reassign the original material the previously clicked object
                             if (mSelectedBGComp != null)
@@ -282,20 +280,20 @@ public class Board : MonoBehaviour
                         Cell lSelectedCell = mSelectedBGComp as Cell;
                         if (lIsClickConfirmed && mAllCells.Contains(lSelectedCell))
                         {
-                            Debug.Log("PLACING PHASE : player " + mCurrentPlayer + "'s turn");
+                            Debug.Log("PLACING PHASE : player " + lCurrentPlayer + "'s turn");
                             //Instanciate and name the builder
                             GameObject lBuilderObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                            lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / lGM.getNbPlayers())) + "_p" + mCurrentPlayer;
+                            lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / lGM.getNbPlayers())) + "_p" + lCurrentPlayer;
                             //create the Builder script
                             Builder lBuilderScr = lBuilderObj.AddComponent<Builder>();
                             //declare its player owner
-                            lBuilderScr.mPlayer = mCurrentPlayer;
+                            lBuilderScr.mPlayer = lCurrentPlayer;
                             //declare its location
                             lBuilderScr.mCell = lSelectedCell;
 
-                            if (lBuilderScr.setDefaultMaterial(lGM.mPlayersMaterial[mCurrentPlayer]))
+                            if (lBuilderScr.setDefaultMaterial(lGM.mPlayersMaterial[lCurrentPlayer]))
                             {
-                                lBuilderScr.ApplyMaterial(lGM.mPlayersMaterial[mCurrentPlayer]);
+                                lBuilderScr.ApplyMaterial(lGM.mPlayersMaterial[lCurrentPlayer]);
                             }
 
                             //declare the cell as occupied
@@ -304,7 +302,12 @@ public class Board : MonoBehaviour
 
                             mAllBuilders.Add(lBuilderScr);
 
-                            mCurrentPlayer = ((mCurrentPlayer + 1) % lGM.getNbPlayers());
+                            lGM.mTurnCompleted.Invoke((lCurrentPlayer + 1) % lGM.getNbPlayers());
+
+                            Debug.Log($"Nb Player : {lGM.getNbPlayers()}\n" +
+                                      $"Expected Nb Builders : {lGM.getNbPlayers() * 2}\n" +
+                                      $"Current Nb Builders : {mAllBuilders.Count}\n");
+
                             if (mAllBuilders.Count >= lGM.getNbPlayers() * 2)
                             {
                                 //mGamePhase = 1;
