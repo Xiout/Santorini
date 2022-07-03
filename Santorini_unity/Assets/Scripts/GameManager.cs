@@ -53,6 +53,9 @@ public class GameManager
     public ModificationNbPlayersEvent mModNbPlayersEvent;
 
     private GameObject mMenuGO;
+    private GameObject mOptionMenuGO;
+    private GameObject mVictoryGO;
+    private GameObject mInGameGO;
 
 
     public static GameManager sGetInstance()
@@ -85,6 +88,10 @@ public class GameManager
             sInstance.mCurrentState = GameState.MENU;
             sInstance.mMenuGO = GameObject.Find("Canvas_Menu");
             sInstance.mMenuGO.SetActive(true);
+
+            sInstance.mOptionMenuGO = sInstance.mMenuGO.GetComponent<MainMenu>().mMenuOptions;
+            sInstance.mVictoryGO = sInstance.mMenuGO.GetComponent<MainMenu>().mVictory;
+            sInstance.mInGameGO = sInstance.mMenuGO.GetComponent<MainMenu>().mInGame;
 
             sInstance.mInGamePhase = 0;
             sInstance.mNbPlayers = 2;
@@ -137,7 +144,7 @@ public class GameManager
     private void turnCompleted(int pNextPlayer)
     {
         mCurrentPlayer = pNextPlayer;
-        mMenuGO.GetComponent<MainMenu>().mInGame.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
+        mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
     }
 
     private void startGame()
@@ -153,26 +160,25 @@ public class GameManager
 
         //Hide Menu, display In-Game UI
         mMenuGO.SetActive(false);
-        mMenuGO.GetComponent<MainMenu>().mVictory.SetActive(false);
-        mMenuGO.GetComponent<MainMenu>().mInGame.SetActive(true);
+        mVictoryGO.SetActive(false);
+        mInGameGO.SetActive(true);
 
         //Set First Player
         mCurrentPlayer = 0;
-        mMenuGO.GetComponent<MainMenu>().mInGame.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
+        mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
     }
 
     private void Victory(int pIdWinner)
     {
-        mMenuGO.GetComponent<MainMenu>().mInGame.SetActive(false);
+        mInGameGO.SetActive(false);
 
         string lStrVictory = $"PLAYER {pIdWinner+1} WON !";
         Debug.Log(lStrVictory);
 		
 		mCurrentState = GameState.VICTORY;
-        GameObject lVictoryGO = mMenuGO.GetComponent<MainMenu>().mVictory;
 
-        lVictoryGO.SetActive(true);
-		GameObject lTxtVictoryGO = lVictoryGO.transform.Find("Txt_Victory").gameObject;
+        mVictoryGO.SetActive(true);
+		GameObject lTxtVictoryGO = mVictoryGO.transform.Find("Txt_Victory").gameObject;
 		lTxtVictoryGO.GetComponent<Text>().text = lStrVictory;
     }
 }

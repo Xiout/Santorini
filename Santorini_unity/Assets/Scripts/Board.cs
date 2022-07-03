@@ -139,9 +139,24 @@ public class Board : MonoBehaviour
                 while (Physics.Raycast(lMouseRay, out lMouseRayHit)) //BREAKABLE
                 {
                     //retrieve the clickedObject
+                    Debug.Log("RayHit " + lMouseRayHit.ToString());
                     GameObject lClickedObject = lMouseRayHit.transform.gameObject;
-                    BoardGameComponent lClickedBGComp = lClickedObject.GetComponent<BoardGameComponent>();
                     if (lClickedObject == null) { break; }
+
+                    Debug.Log("Click On "+ lClickedObject.name);
+                    BoardGameComponent lClickedBGComp = lClickedObject.GetComponent<BoardGameComponent>();
+
+                    if (lClickedBGComp == null) 
+                    {
+                        Transform parentTrans = lClickedObject.transform.parent;
+                        if(parentTrans== null){ return; }
+
+                        BoardGameComponent lParentBGComp = parentTrans.GetComponent<BoardGameComponent>();
+                        if (lParentBGComp == null) { return; }
+
+                        lClickedObject = parentTrans.gameObject;
+                        lClickedBGComp = lParentBGComp;
+                    }
 
                     //the click is "confirmed" if the previous selected object is same that the clicked object
                     //in other words, we have to clic twice on the same cell to place a builder on it
