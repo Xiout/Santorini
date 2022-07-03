@@ -27,16 +27,16 @@ public class OptionMenu : MonoBehaviour
     {
         GameManager lGM = GameManager.sGetInstance();
 
-        mTextNPlayers.text = lGM.getNbPlayers().ToString();
+        mTextNPlayers.text = lGM.GetNbPlayers().ToString();
 
         int i = 0;
-        while(lGM.mPlayers.Count < lGM.getNbPlayers())
+        while(lGM.mPlayers.Count < lGM.GetNbPlayers())
         {
             lGM.mPlayers.Add(new Player(0, null));
             i++;
         }
 
-        if(lGM.getNbPlayers() == GameManager.sMIN_NBPLAYERS)
+        if(lGM.GetNbPlayers() == GameManager.sMIN_NBPLAYERS)
         {
             mBttLessPlayers.gameObject.SetActive(false);
         }
@@ -45,7 +45,7 @@ public class OptionMenu : MonoBehaviour
             mBttLessPlayers.gameObject.SetActive(true);
         }
 
-        if (lGM.getNbPlayers() == GameManager.sMAX_NBPLAYERS)
+        if (lGM.GetNbPlayers() == GameManager.sMAX_NBPLAYERS)
         {
             mBttMorePlayers.gameObject.SetActive(false);
         }
@@ -57,7 +57,7 @@ public class OptionMenu : MonoBehaviour
         for (int iPlayer=GameManager.sMIN_NBPLAYERS; iPlayer< GameManager.sMAX_NBPLAYERS; ++iPlayer)
         {
             if (iPlayer >= mLinePlayers.Count) { break; }
-            if (iPlayer < lGM.getNbPlayers())
+            if (iPlayer < lGM.GetNbPlayers())
             {
                 mLinePlayers[iPlayer].SetActive(true);
             }

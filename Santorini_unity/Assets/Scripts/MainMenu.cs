@@ -18,6 +18,6 @@ public class MainMenu : MonoBehaviour
     public void PlayGame()
     {
         Debug.Log("Play Game");
-        GameManager.sGetInstance().Play();
+        GameManager.sGetInstance().SetUpGame();
     }
 }

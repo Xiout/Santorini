@@ -39,7 +39,7 @@ public class Builder : BoardGameComponent
     {
         GameManager lGM = GameManager.sGetInstance();
 
-        if (lGM.getGameState() == GameManager.GameState.PLAY && mCurrentCell.getBuildingLevel() == 3)
+        if (lGM.GetGameState() == GameManager.GameState.PLAY && mCurrentCell.getBuildingLevel() == 3)
         {
             GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayer);
         }

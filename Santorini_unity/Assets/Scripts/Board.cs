@@ -32,7 +32,6 @@ public class Board : MonoBehaviour
     private List<Builder> mAllBuilders;
 
     private BoardGameComponent mSelectedBGComp;
-
     void Start()
     {
         mAllBuilders = new List<Builder>();
@@ -116,21 +115,25 @@ public class Board : MonoBehaviour
             lRowObj.transform.SetParent(gameObject.transform);
             lPreviousRowObj = lRowObj;
         }
+
+        GameManager lGM = GameManager.sGetInstance();
+        lGM.SetBoard(this);
     }
 
     void Update()
     {
         GameManager lGM = GameManager.sGetInstance();
-        int lCurrentPlayer = lGM.getCurrentPlayer();
+        //int lCurrentPlayer = lGM.GetCurrentPlayer();
+        Player lCurrentPlayer = lGM.mPlayers[lGM.GetCurrentPlayer()];
 
-        if (lGM.getGameState() == GameManager.GameState.RESET)
+        if (lGM.GetGameState() == GameManager.GameState.RESET)
         {
             ClearBoard();
             Debug.Log("Board Cleared Sucessfully");
             lGM.mBoardResetEvent.Invoke();
         }
 
-        if(lGM.getGameState() == GameManager.GameState.PLAY)
+        if(lGM.GetGameState() == GameManager.GameState.PLAY)
         {
             //Script de base permettant d'afficher le nom de l'objet selectionner
             if (Input.GetMouseButtonDown(0))
@@ -168,7 +171,7 @@ public class Board : MonoBehaviour
                     //the clicked object is different that the currently selected object : the selection change OR an action is performed
                     if (mSelectedBGComp == null || (mSelectedBGComp.gameObject != lClickedBGComp.gameObject))
                     {
-                        if (lGM.GetInGamePhase() != 0)
+                        if (lGM.GetInGamePhase() != InGamePhase.PLACE)
                         {
                             lBuilder = mSelectedBGComp as Builder;
                             if (lBuilder != null && mAllBuilders.Contains(lBuilder))
@@ -187,20 +190,10 @@ public class Board : MonoBehaviour
                                             //changing to building phase
                                             lGM.mMovingEvent.Invoke();
 
-                                            //reset the default material on all adjoning cells of the Builder's previous cell
-                                            for (int i = 0; i < lPrevCell.mAdjoiningCells.Count; ++i)
-                                            {
-                                                lPrevCell.mAdjoiningCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
-                                            }
-
-                                            //Painting cells for building
-                                            List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
-                                            for (int i = 0; i < lAvailableCells.Count; ++i)
-                                            {
-                                                lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
-                                            }
-
+                                            //reset the default material on all adjacent cells of the Builder's previous cell
+                                            ResetMaterialOnAllAdjacentCells(lPrevCell);
                                             //the builder stay selected for the building phase
+                                            HightlightBuildingCell(lBuilder);
                                         }
                                         break;
                                     }
@@ -231,7 +224,7 @@ public class Board : MonoBehaviour
                                                 //change of game phase and turn
                                                 lClickedCell.GetComponent<BoardGameComponent>().ResetMaterial();
                                                 lGM.mBuildingEvent.Invoke();
-                                                lGM.mTurnCompleted.Invoke((lCurrentPlayer + 1) % lGM.getNbPlayers());
+                                                lGM.mTurnCompleted.Invoke((lCurrentPlayer.mIndex + 1) % lGM.GetNbPlayers());
                                             }
                                         } 
                                     }
@@ -239,15 +232,15 @@ public class Board : MonoBehaviour
                             }
                         }
 
-                        //The selection can't change during the building phase.
                         if (lGM.GetInGamePhase() == InGamePhase.BUILD)
                         {
+                            //The selection can't change during the building phase.
                             break;
                         }
 
                         //THE SELECTION CHANGE 
                         Builder lClickedBuilder = lClickedBGComp as Builder;
-                        if (lGM.GetInGamePhase() != InGamePhase.MOVE || (lClickedBuilder != null && lClickedBuilder.mPlayer == lCurrentPlayer))
+                        if (lGM.GetInGamePhase() != InGamePhase.MOVE || (lClickedBuilder != null && lClickedBuilder.mPlayer == lCurrentPlayer.mIndex))
                         {
                             //This part is for reassign the original material the previously clicked object
                             if (mSelectedBGComp != null)
@@ -293,21 +286,21 @@ public class Board : MonoBehaviour
                         Cell lSelectedCell = mSelectedBGComp as Cell;
                         if (lIsClickConfirmed && mAllCells.Contains(lSelectedCell))
                         {
-                            Debug.Log("PLACING PHASE : player " + lCurrentPlayer + "'s turn");
+                            Debug.Log("PLACING PHASE : player " + lCurrentPlayer.mIndex + "'s turn");
                             //Instanciate and name the builder
                             GameObject lBuilderObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                            lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / lGM.getNbPlayers())) + "_p" + lCurrentPlayer;
+                            lBuilderObj.name = "Builder" + ((int)(mAllBuilders.Count / lGM.GetNbPlayers())) + "_p" + lCurrentPlayer.mIndex;
                             //create the Builder script
                             Builder lBuilderScr = lBuilderObj.AddComponent<Builder>();
                             //declare its player owner
-                            lBuilderScr.mPlayer = lCurrentPlayer;
+                            lBuilderScr.mPlayer = lCurrentPlayer.mIndex;
                             //declare its location
                             lBuilderScr.mCurrentCell = lSelectedCell;
                             lBuilderScr.mPreviousTurnCell = lBuilderScr.mCurrentCell;
 
-                            if (lBuilderScr.setDefaultMaterial(lGM.mPlayers[lCurrentPlayer].mMaterial))
+                            if (lBuilderScr.setDefaultMaterial(lGM.mPlayers[lCurrentPlayer.mIndex].mMaterial))
                             {
-                                lBuilderScr.ApplyMaterial(lGM.mPlayers[lCurrentPlayer].mMaterial);
+                                lBuilderScr.ApplyMaterial(lGM.mPlayers[lCurrentPlayer.mIndex].mMaterial);
                             }
 
                             //declare the cell as occupied
@@ -315,15 +308,15 @@ public class Board : MonoBehaviour
                             mCellScr.mIsFree = false;
 
                             mAllBuilders.Add(lBuilderScr);
-                            lGM.mPlayers[lCurrentPlayer].AddBuilder(lBuilderScr);
+                            lGM.mPlayers[lCurrentPlayer.mIndex].AddBuilder(lBuilderScr);
 
-                            lGM.mTurnCompleted.Invoke((lCurrentPlayer + 1) % lGM.getNbPlayers());
+                            lGM.mTurnCompleted.Invoke((lCurrentPlayer.mIndex + 1) % lGM.GetNbPlayers());
 
-                            Debug.Log($"Nb Player : {lGM.getNbPlayers()}\n" +
-                                      $"Expected Nb Builders : {lGM.getNbPlayers() * 2}\n" +
+                            Debug.Log($"Nb Player : {lGM.GetNbPlayers()}\n" +
+                                      $"Expected Nb Builders : {lGM.GetNbPlayers() * 2}\n" +
                                       $"Current Nb Builders : {mAllBuilders.Count}\n");
 
-                            if (mAllBuilders.Count >= lGM.getNbPlayers() * 2)
+                            if (mAllBuilders.Count >= lGM.GetNbPlayers() * 2)
                             {
                                 //mGamePhase = 1;
                                 lGM.mPlacingEvent.Invoke();
@@ -373,6 +366,24 @@ public class Board : MonoBehaviour
         {
             Debug.Log("Clear " + mAllCells[iCell].gameObject.name);
             mAllCells[iCell].ClearCell();
+        }
+    }
+
+    private void HightlightBuildingCell(Builder lBuilder)
+    {
+        //Painting cells for building
+        List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
+        for (int i = 0; i < lAvailableCells.Count; ++i)
+        {
+            lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
+        }
+    }
+
+    private static void ResetMaterialOnAllAdjacentCells(Cell pCell)
+    {
+        for (int i = 0; i < pCell.mAdjoiningCells.Count; ++i)
+        {
+            pCell.mAdjoiningCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
         }
     }
 }

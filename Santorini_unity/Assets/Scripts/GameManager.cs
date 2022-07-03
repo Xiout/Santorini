@@ -5,26 +5,8 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using static PowerManager;
 
-public class GameManager
+public partial class GameManager
 {
-    //In Game Events
-    //Event placing phase complete
-    public class PlacingPhaseCompletedEvent : UnityEvent{}
-    //Event moving phase complete
-    public class MovingPhaseCompletedEvent : UnityEvent{}
-    //Event building phase complete
-    public class BuildingPhaseCompletedEvent : UnityEvent{}
-    //Event Turn Completed
-    public class TurnCompletedEvent : UnityEvent<int>{}
-    //Event Victory
-    public class VictoryEvent : UnityEvent<int>{}
-    //Event Board Reset
-    public class BoardResetEvent : UnityEvent{}
-
-    //Menu Events
-    //Event Modification Nb Players
-    public class ModificationNbPlayersEvent : UnityEvent<int> { }
-
     private static GameManager sInstance = null;
 
     public enum GameState{MENU, PLAY, VICTORY, RESET}
@@ -38,17 +20,9 @@ public class GameManager
     public const int sMAX_NBPLAYERS = 3;
 
     public List<Player> mPlayers;
-
     private int mCurrentPlayer;
 
-    //Events
-    public PlacingPhaseCompletedEvent mPlacingEvent;
-    public MovingPhaseCompletedEvent mMovingEvent;
-    public BuildingPhaseCompletedEvent mBuildingEvent;
-    public TurnCompletedEvent mTurnCompleted;
-    public VictoryEvent mVictoryEvent;
-    public BoardResetEvent mBoardResetEvent;
-    public ModificationNbPlayersEvent mModNbPlayersEvent;
+    private Board mBoard;
 
     private GameObject mMenuGO;
     private GameObject mOptionMenuGO;
@@ -61,27 +35,7 @@ public class GameManager
         if (sInstance == null)
         {
             sInstance = new GameManager();
-
-            sInstance.mPlacingEvent = new PlacingPhaseCompletedEvent();
-            sInstance.mPlacingEvent.AddListener(sInstance.placingPhaseCompleted);
-
-            sInstance.mMovingEvent = new MovingPhaseCompletedEvent();
-            sInstance.mMovingEvent.AddListener(sInstance.movingPhaseCompleted);
-
-            sInstance.mBuildingEvent = new BuildingPhaseCompletedEvent();
-            sInstance.mBuildingEvent.AddListener(sInstance.buildingPhaseCompleted);
-
-            sInstance.mTurnCompleted = new TurnCompletedEvent();
-            sInstance.mTurnCompleted.AddListener(sInstance.turnCompleted);
-
-            sInstance.mVictoryEvent = new VictoryEvent();
-            sInstance.mVictoryEvent.AddListener(sInstance.Victory);
-
-            sInstance.mBoardResetEvent = new BoardResetEvent();
-            sInstance.mBoardResetEvent.AddListener(sInstance.startGame);
-
-            sInstance.mModNbPlayersEvent = new ModificationNbPlayersEvent();
-            sInstance.mModNbPlayersEvent.AddListener(sInstance.addPlayers);
+            SetUpEvents(sInstance);
 
             sInstance.mCurrentState = GameState.MENU;
             sInstance.mMenuGO = GameObject.Find("Canvas_Menu");
@@ -99,22 +53,38 @@ public class GameManager
         return sInstance;
     }
 
-    public int getNbPlayers()
+    public bool SetBoard(Board pBoard)
+    {
+        if (mBoard == null)
+        {
+            mBoard = pBoard;
+            return true;
+        }
+
+        return false;
+    }
+
+    public Board GetBoard()
+    {
+        return mBoard;
+    }
+
+    public int GetNbPlayers()
     {
         return mNbPlayers;
     }
 
-    public int getCurrentPlayer()
+    public int GetCurrentPlayer()
     {
         return mCurrentPlayer;
     }
 
-    private void addPlayers(int pNb)
+    private void AddPlayers(int pNb)
     {
         mNbPlayers += pNb;
     }
 
-    public GameState getGameState()
+    public GameState GetGameState()
     {
         return mCurrentState;
     }
@@ -124,35 +94,7 @@ public class GameManager
         return mInGamePhase;
     }
 
-    private void placingPhaseCompleted()
-    {
-        mInGamePhase = InGamePhase.MOVE;
-    }
-
-    private void movingPhaseCompleted()
-    {
-        mInGamePhase = InGamePhase.BUILD;
-    }
-
-    private void buildingPhaseCompleted()
-    {
-        mInGamePhase = InGamePhase.MOVE;
-    }
-
-    private void turnCompleted(int pNextPlayer)
-    {
-        mPlayers[mCurrentPlayer].EndTurnPlayer();
-        mCurrentPlayer = pNextPlayer;
-        mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
-    }
-
-    private void startGame()
-    {
-        mCurrentState = GameState.PLAY;
-        mInGamePhase = 0;
-    }
-
-    public void Play()
+    public void SetUpGame()
     {
         //By default, the game state is RESET so in case of Replay, the board is cleared and the game state is updated to PLAY after
         mCurrentState = GameState.RESET; 
