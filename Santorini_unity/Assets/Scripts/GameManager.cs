@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using static PowerManager;
 
 public class GameManager
 {
@@ -29,17 +30,14 @@ public class GameManager
     public enum GameState{MENU, PLAY, VICTORY, RESET}
     private GameState mCurrentState;
 
-    ///Placing phase : 0
-    ///Moving phase : 1
-    ///Building phase : 2
-    private int mInGamePhase;
+    public enum InGamePhase { PLACE, MOVE, BUILD}
+    private InGamePhase mInGamePhase;
 
     private int mNbPlayers;
     public const int sMIN_NBPLAYERS = 2;
     public const int sMAX_NBPLAYERS = 3;
-    ///players' builder material
-    ///the size of this list MUST be equal to mNbPlayers
-    public List<Material> mPlayersMaterial;
+
+    public List<Player> mPlayers;
 
     private int mCurrentPlayer;
 
@@ -95,7 +93,7 @@ public class GameManager
 
             sInstance.mInGamePhase = 0;
             sInstance.mNbPlayers = 2;
-            sInstance.mPlayersMaterial = new List<Material>();
+            sInstance.mPlayers = new List<Player>();
         }
 
         return sInstance;
@@ -121,30 +119,30 @@ public class GameManager
         return mCurrentState;
     }
 
-    public int GetInGamePhase()
+    public InGamePhase GetInGamePhase()
     {
         return mInGamePhase;
     }
 
     private void placingPhaseCompleted()
     {
-        mInGamePhase = 1;
+        mInGamePhase = InGamePhase.MOVE;
     }
 
     private void movingPhaseCompleted()
     {
-        mInGamePhase = 2;
+        mInGamePhase = InGamePhase.BUILD;
     }
 
     private void buildingPhaseCompleted()
     {
-        mInGamePhase = 1;
+        mInGamePhase = InGamePhase.MOVE;
     }
 
     private void turnCompleted(int pNextPlayer)
     {
         mCurrentPlayer = pNextPlayer;
-        mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
+        mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
     }
 
     private void startGame()
@@ -165,7 +163,7 @@ public class GameManager
 
         //Set First Player
         mCurrentPlayer = 0;
-        mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayersMaterial[mCurrentPlayer]);
+        mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
     }
 
     private void Victory(int pIdWinner)

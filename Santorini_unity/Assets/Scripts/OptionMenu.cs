@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using static PowerManager;
 
 public class OptionMenu : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public class OptionMenu : MonoBehaviour
             Transform transLine = mLinePlayers[i].transform.Find("Swatche");
             Image img = transLine.GetComponent<Image>();
             img.color = mAllMaterialForPlayers[i].color;
-            lGM.mPlayersMaterial.Add(mAllMaterialForPlayers[i]);
+            lGM.mPlayers.Add(new Player(i, mAllMaterialForPlayers[i]));
         }
     }
    
@@ -28,9 +29,11 @@ public class OptionMenu : MonoBehaviour
 
         mTextNPlayers.text = lGM.getNbPlayers().ToString();
 
-        while(lGM.mPlayersMaterial.Count < lGM.getNbPlayers())
+        int i = 0;
+        while(lGM.mPlayers.Count < lGM.getNbPlayers())
         {
-            lGM.mPlayersMaterial.Add(null);
+            lGM.mPlayers.Add(new Player(0, null));
+            i++;
         }
 
         if(lGM.getNbPlayers() == GameManager.sMIN_NBPLAYERS)
@@ -51,16 +54,16 @@ public class OptionMenu : MonoBehaviour
             mBttMorePlayers.gameObject.SetActive(true);
         }
 
-        for (int i=GameManager.sMIN_NBPLAYERS; i< GameManager.sMAX_NBPLAYERS; ++i)
+        for (int iPlayer=GameManager.sMIN_NBPLAYERS; iPlayer< GameManager.sMAX_NBPLAYERS; ++iPlayer)
         {
-            if (i >= mLinePlayers.Count) { break; }
-            if (i < lGM.getNbPlayers())
+            if (iPlayer >= mLinePlayers.Count) { break; }
+            if (iPlayer < lGM.getNbPlayers())
             {
-                mLinePlayers[i].SetActive(true);
+                mLinePlayers[iPlayer].SetActive(true);
             }
             else
             {
-                mLinePlayers[i].SetActive(false);
+                mLinePlayers[iPlayer].SetActive(false);
             }
         }
     }
@@ -91,7 +94,7 @@ public class OptionMenu : MonoBehaviour
         Transform transLineCurrPlayer = mLinePlayers[pNumPlayer].transform.Find("Swatche");
         Image imgCurrPlayer = transLineCurrPlayer.GetComponent<Image>();
 
-        int ind = mAllMaterialForPlayers.IndexOf(lGM.mPlayersMaterial[pNumPlayer]);
+        int ind = mAllMaterialForPlayers.FindIndex(mat => mat == lGM.mPlayers[pNumPlayer].mMaterial);
         ind = (ind+1)%mAllMaterialForPlayers.Count;
         while (usedColors.Contains(mAllMaterialForPlayers[ind].color))
         {
@@ -99,6 +102,6 @@ public class OptionMenu : MonoBehaviour
         }
 
         imgCurrPlayer.color = mAllMaterialForPlayers[ind].color;
-        lGM.mPlayersMaterial[pNumPlayer] = mAllMaterialForPlayers[ind];
+        lGM.mPlayers[pNumPlayer].mMaterial = mAllMaterialForPlayers[ind];
     }
 }

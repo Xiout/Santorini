@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static GameManager;
 
 ///Managing script of the board
 //TODO : Tranformer en singleton ?
@@ -139,13 +140,13 @@ public class Board : MonoBehaviour
                 while (Physics.Raycast(lMouseRay, out lMouseRayHit)) //BREAKABLE
                 {
                     //retrieve the clickedObject
-                    Debug.Log("RayHit " + lMouseRayHit.ToString());
                     GameObject lClickedObject = lMouseRayHit.transform.gameObject;
                     if (lClickedObject == null) { break; }
 
                     Debug.Log("Click On "+ lClickedObject.name);
                     BoardGameComponent lClickedBGComp = lClickedObject.GetComponent<BoardGameComponent>();
 
+                    //Click on tower floors are treated as click on their parent cell
                     if (lClickedBGComp == null) 
                     {
                         Transform parentTrans = lClickedObject.transform.parent;
@@ -177,14 +178,13 @@ public class Board : MonoBehaviour
                                 if (lClickedCell != null && mAllCells.Contains(lClickedCell))
                                 {
                                     //The just clicked object is a cell  
-                                    if (lGM.GetInGamePhase() == 1)
+                                    if (lGM.GetInGamePhase() == InGamePhase.MOVE)
                                     {
                                         //MOVE
                                         Cell lPrevCell = lBuilder.mCell;
                                         if (lBuilder.TryMove(lClickedCell))
                                         {
                                             //changing to building phase
-                                            //mGamePhase = 2;
                                             lGM.mMovingEvent.Invoke();
 
                                             //reset the default material on all adjoning cells of the Builder's previous cell
@@ -205,7 +205,7 @@ public class Board : MonoBehaviour
                                         break;
                                     }
 
-                                    if (lGM.GetInGamePhase() == 2)
+                                    if (lGM.GetInGamePhase() == InGamePhase.BUILD)
                                     {
                                         //BUILD
                                         Debug.Log("BUILDING PHASE");
@@ -229,7 +229,6 @@ public class Board : MonoBehaviour
                                                 mSelectedBGComp = null;
 
                                                 //change of game phase and turn
-                                                //mGamePhase = 1;
                                                 lClickedCell.GetComponent<BoardGameComponent>().ResetMaterial();
                                                 lGM.mBuildingEvent.Invoke();
                                                 lGM.mTurnCompleted.Invoke((lCurrentPlayer + 1) % lGM.getNbPlayers());
@@ -241,15 +240,14 @@ public class Board : MonoBehaviour
                         }
 
                         //The selection can't change during the building phase.
-                        if (lGM.GetInGamePhase() == 2)
+                        if (lGM.GetInGamePhase() == InGamePhase.BUILD)
                         {
                             break;
                         }
 
                         //THE SELECTION CHANGE 
-   
                         Builder lClickedBuilder = lClickedBGComp as Builder;
-                        if (lGM.GetInGamePhase() != 1 || (lClickedBuilder != null && lClickedBuilder.mPlayer == lCurrentPlayer))
+                        if (lGM.GetInGamePhase() != InGamePhase.MOVE || (lClickedBuilder != null && lClickedBuilder.mPlayer == lCurrentPlayer))
                         {
                             //This part is for reassign the original material the previously clicked object
                             if (mSelectedBGComp != null)
@@ -290,7 +288,7 @@ public class Board : MonoBehaviour
                     }
 
                     //Builders placing phase
-                    if (lGM.GetInGamePhase() == 0)
+                    if (lGM.GetInGamePhase() == InGamePhase.PLACE)
                     {
                         Cell lSelectedCell = mSelectedBGComp as Cell;
                         if (lIsClickConfirmed && mAllCells.Contains(lSelectedCell))
@@ -306,9 +304,9 @@ public class Board : MonoBehaviour
                             //declare its location
                             lBuilderScr.mCell = lSelectedCell;
 
-                            if (lBuilderScr.setDefaultMaterial(lGM.mPlayersMaterial[lCurrentPlayer]))
+                            if (lBuilderScr.setDefaultMaterial(lGM.mPlayers[lCurrentPlayer].mMaterial))
                             {
-                                lBuilderScr.ApplyMaterial(lGM.mPlayersMaterial[lCurrentPlayer]);
+                                lBuilderScr.ApplyMaterial(lGM.mPlayers[lCurrentPlayer].mMaterial);
                             }
 
                             //declare the cell as occupied
@@ -316,6 +314,7 @@ public class Board : MonoBehaviour
                             mCellScr.mIsFree = false;
 
                             mAllBuilders.Add(lBuilderScr);
+                            lGM.mPlayers[lCurrentPlayer].AddBuilder(lBuilderScr);
 
                             lGM.mTurnCompleted.Invoke((lCurrentPlayer + 1) % lGM.getNbPlayers());
 
@@ -336,7 +335,7 @@ public class Board : MonoBehaviour
                     }
                     else
                     {
-                        if (lGM.GetInGamePhase() == 1)
+                        if (lGM.GetInGamePhase() == InGamePhase.MOVE)
                         {
                             //Moving phase
                             Debug.Log("MOVING PHASE");
