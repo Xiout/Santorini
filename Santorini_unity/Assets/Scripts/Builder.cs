@@ -90,7 +90,8 @@ public class Builder : BoardGameComponent
             pCell.mIsFree && //Can move only on cell not occupied by another builder
             pCell.getBuildingLevel()-mCurrentCell.getBuildingLevel()<2 &&  //Cannot Got Up from more than 1 level at the time
             pCell.getBuildingLevel() < 4 //Cannot move on floor 4 or above
-            && PowerManager.AthenaMoveRestriction(lGM,this,pCell); //Check Athena's power restriction (If a player with Athena has move up during his last turn, no other player can move up this turn)
+            && PowerManager.AthenaMoveRestriction(this, pCell) //Check Athena's power restriction (If a player with Athena has move up during his last turn, no other player can move up this turn)
+            && PowerManager.ArtemisSecondMoveRestriction(this, pCell); //Check Artemis's power restriction (Player with Artemis power may move twice before building but second movement cannot be initial position)
     }
 
     ///return true if the builder is currently able to move to the cell as parameter

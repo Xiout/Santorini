@@ -12,7 +12,7 @@ public partial class GameManager
     public enum GameState{MENU, PLAY, VICTORY, RESET}
     private GameState mCurrentState;
 
-    public enum InGamePhase { PLACE, MOVE, BUILD}
+    public enum InGamePhase { PLACE, MOVE, BUILD, POWER}
     private InGamePhase mInGamePhase;
 
     private int mNbPlayers;
@@ -29,6 +29,7 @@ public partial class GameManager
     private GameObject mVictoryGO;
     private GameObject mInGameGO;
 
+    public bool mIsPowerOn;
 
     public static GameManager sGetInstance()
     {
@@ -48,6 +49,7 @@ public partial class GameManager
             sInstance.mInGamePhase = 0;
             sInstance.mNbPlayers = 2;
             sInstance.mPlayers = new List<Player>();
+            sInstance.mIsPowerOn = false;
         }
 
         return sInstance;
@@ -104,10 +106,15 @@ public partial class GameManager
         mVictoryGO.SetActive(false);
         mInGameGO.SetActive(true);
 
+        //Set God
+        mPlayers[0].SetGod(God.Athena);
+        mPlayers[1].SetGod(God.Artemis);
+
         //Set First Player
         mCurrentPlayer = 0;
-        mPlayers[0].SetGod(God.Athena);
         mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
+        mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
+        sInstance.mIsPowerOn = false;
     }
 
     private void Victory(int pIdWinner)

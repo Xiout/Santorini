@@ -8,7 +8,7 @@ public class PowerManager
    public enum God{
         None,
         //Apollo,     //Your Move: Your Worker may move into an opponent Worker's space by forcing their Worker to the space yours just vacated.
-        //Artemis,      //Your Move: Your Worker may move one additional time, but not back to its initial space.
+        Artemis,      //Your Move: Your Worker may move one additional time, but not back to its initial space.
         Athena,       //Opponent's Turn: If one of your Workers moved up on your last turn, opponent Workers cannot move up this turn.
         //Atlas,      //Your Build: Your Worker may build a dome at any level.
         //Demeter,    //Your Build: Your Worker may build one additional time, but not on the same space.
@@ -27,11 +27,11 @@ public class PowerManager
     /// <param name="pBuilder"></param>
     /// <param name="pCell"></param>
     /// <returns></returns>
-    public static bool AthenaMoveRestriction(GameManager pGM, Builder pBuilder, Cell pCell)
+    public static bool AthenaMoveRestriction(Builder pBuilder, Cell pCell)
     {
-        Player AthenaPlayer = pGM.mPlayers.Find(player => player.mGod == God.Athena);
+        GameManager lGM = GameManager.sGetInstance();
+        Player AthenaPlayer = lGM.mPlayers.Find(player => player.mGod == God.Athena);
 
-        
         if (AthenaPlayer == null)
         {
             //Athena is not played this game
@@ -62,5 +62,15 @@ public class PowerManager
 
         //The buider is allowed to move only on cell at the same level as him or lower
         return pBuilder.mCurrentCell.getBuildingLevel() >= pCell.getBuildingLevel();
+    }
+
+    public static bool ArtemisSecondMoveRestriction(Builder pBuilder, Cell pCell)
+    {
+        if(pBuilder.mHasMovedThisTurn && pBuilder.mPreviousTurnCell == pCell)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

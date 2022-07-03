@@ -3066,6 +3066,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mActivePayerLine: {fileID: 1300150094}
+  mPower: {fileID: 1384486739}
+  mMaterialPowerOn: {fileID: 2100000, guid: 3ec75d385bcf8664e81457abf3e3ac76, type: 2}
+  mMaterialPowerOff: {fileID: 2100000, guid: e92743def574adf4f82368a3a3a96ab2, type: 2}
 --- !u!1 &859731364
 GameObject:
   m_ObjectHideFlags: 0

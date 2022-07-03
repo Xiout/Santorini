@@ -18,10 +18,14 @@ public partial class GameManager
     public class VictoryEvent : UnityEvent<int> { }
     //Event Board Reset
     public class BoardResetEvent : UnityEvent { }
+    //Event Power Action Realised
+    public class PowerExecutedEvent : UnityEvent { }
 
     //Menu Events
     //Event Modification Nb Players
     public class ModificationNbPlayersEvent : UnityEvent<int> { }
+    //Event Power On
+    public class PowerOnOffEvent : UnityEvent { }
     #endregion
 
     public PlacingPhaseCompletedEvent mPlacingEvent;
@@ -31,6 +35,8 @@ public partial class GameManager
     public VictoryEvent mVictoryEvent;
     public BoardResetEvent mBoardResetEvent;
     public ModificationNbPlayersEvent mModNbPlayersEvent;
+    public PowerOnOffEvent mPowerOnOffEvent;
+    public PowerExecutedEvent mPowerExecutedEvent;
 
     private static void SetUpEvents(GameManager pInstance)
     {
@@ -54,20 +60,43 @@ public partial class GameManager
         
         pInstance.mModNbPlayersEvent = new ModificationNbPlayersEvent();
         pInstance.mModNbPlayersEvent.AddListener(sInstance.AddPlayers);
+
+        pInstance.mPowerOnOffEvent = new PowerOnOffEvent();
+        pInstance.mPowerOnOffEvent.AddListener(sInstance.PowerOnOff);
+
+        pInstance.mPowerExecutedEvent = new PowerExecutedEvent();
+        pInstance.mPowerExecutedEvent.AddListener(sInstance.PowerExecuted);
     }
 
     private void PlacingPhaseCompleted()
     {
+        mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
+        mInGameGO.GetComponent<InGameUI>().SetPower(false);
+        sInstance.mIsPowerOn = false;
+
         mInGamePhase = InGamePhase.MOVE;
     }
 
     private void MovingPhaseCompleted()
     {
+        mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
+        mInGameGO.GetComponent<InGameUI>().SetPower(false);
+        sInstance.mIsPowerOn = false;
+
+        if (mPlayers[mCurrentPlayer].mGod == God.Artemis)
+        {
+            mInGameGO.GetComponent<InGameUI>().mPower.interactable = true;
+        }
+
         mInGamePhase = InGamePhase.BUILD;
     }
 
     private void BuildingPhaseCompleted()
     {
+        mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
+        mInGameGO.GetComponent<InGameUI>().SetPower(false);
+        sInstance.mIsPowerOn = false;
+
         mInGamePhase = InGamePhase.MOVE;
     }
 
@@ -76,6 +105,9 @@ public partial class GameManager
         mPlayers[mCurrentPlayer].EndTurnPlayer();
         mCurrentPlayer = pNextPlayer;
         mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
+
+        mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
+        sInstance.mIsPowerOn = false;
     }
 
     private void StartGame()
@@ -84,4 +116,28 @@ public partial class GameManager
         mInGamePhase = 0;
     }
 
+    private void PowerOnOff()
+    {
+        Debug.Log("POWER EVENT : "+mIsPowerOn);
+
+        if (mIsPowerOn)
+        {
+            mInGamePhase = InGamePhase.POWER;
+        }
+        else 
+        { 
+            if(mPlayers[mCurrentPlayer].mGod == God.Artemis)
+            {
+                mInGamePhase = InGamePhase.BUILD;
+            }
+        }
+    }
+
+    private void PowerExecuted()
+    {
+        if (mPlayers[mCurrentPlayer].mGod == God.Artemis)
+        {
+            mInGamePhase = InGamePhase.BUILD;
+        }
+    }
 }

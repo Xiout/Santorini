@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using static GameManager;
+using static PowerManager;
 
 ///Managing script of the board
 //TODO : Tranformer en singleton ?
@@ -198,6 +199,25 @@ public class Board : MonoBehaviour
                                         break;
                                     }
 
+                                    if (lGM.GetInGamePhase() == InGamePhase.POWER)
+                                    {
+                                        if (lCurrentPlayer.mGod == God.Artemis)
+                                        {
+                                            //MOVE
+                                            Cell lPrevCell = lBuilder.mCurrentCell;
+                                            if (lBuilder.TryMove(lClickedCell))
+                                            {
+                                                //changing to building phase
+                                                lGM.mPowerExecutedEvent.Invoke();
+
+                                                //reset the default material on all adjacent cells of the Builder's previous cell
+                                                ResetMaterialOnAllAdjacentCells(lPrevCell);
+                                                //the builder stay selected for the building phase
+                                                HightlightBuildingCell(lBuilder);
+                                            }
+                                            break;
+                                        }
+                                    }
                                     if (lGM.GetInGamePhase() == InGamePhase.BUILD)
                                     {
                                         //BUILD
@@ -236,6 +256,15 @@ public class Board : MonoBehaviour
                         {
                             //The selection can't change during the building phase.
                             break;
+                        }
+
+                        if(lGM.GetInGamePhase() == InGamePhase.POWER)
+                        {
+                            if (lCurrentPlayer.mGod == God.Artemis)
+                            {
+                                //The selection can't change during the building phase.
+                                break;
+                            }
                         }
 
                         //THE SELECTION CHANGE 

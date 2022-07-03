@@ -6,6 +6,10 @@ using UnityEngine.UI;
 public class InGameUI : MonoBehaviour
 {
     public GameObject mActivePayerLine;
+    public Button mPower;
+
+    public Material mMaterialPowerOn;
+    public Material mMaterialPowerOff;
 
     public void UpdateActivePlayer(int pNumPlayer, Material pPlayerMaterial)
     {
@@ -18,5 +22,30 @@ public class InGameUI : MonoBehaviour
 
         Transform transTextCurrPlayer = mActivePayerLine.transform.Find("TxtActivePlayer");
         transTextCurrPlayer.GetComponent<Text>().text = $"Player {pNumPlayer + 1}";
+    }
+
+    public void SwitchOnOffPower()
+    {
+        GameManager lGM = GameManager.sGetInstance();
+
+        lGM.mIsPowerOn = !lGM.mIsPowerOn;
+
+        Debug.Log("Switch On/Off Power : "+ lGM.mIsPowerOn);
+
+        SetPower(lGM.mIsPowerOn);
+        lGM.mPowerOnOffEvent.Invoke();
+    }
+
+    public void SetPower(bool pIsOn)
+    {
+        Image imgCurrPlayer = mPower.transform.GetComponent<Image>();
+        if (pIsOn)
+        {
+            imgCurrPlayer.color = mMaterialPowerOn.color;
+        }
+        else
+        {
+            imgCurrPlayer.color = mMaterialPowerOff.color;
+        }
     }
 }
