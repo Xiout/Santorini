@@ -181,7 +181,7 @@ public class Board : MonoBehaviour
                                     if (lGM.GetInGamePhase() == InGamePhase.MOVE)
                                     {
                                         //MOVE
-                                        Cell lPrevCell = lBuilder.mCell;
+                                        Cell lPrevCell = lBuilder.mCurrentCell;
                                         if (lBuilder.TryMove(lClickedCell))
                                         {
                                             //changing to building phase
@@ -302,7 +302,8 @@ public class Board : MonoBehaviour
                             //declare its player owner
                             lBuilderScr.mPlayer = lCurrentPlayer;
                             //declare its location
-                            lBuilderScr.mCell = lSelectedCell;
+                            lBuilderScr.mCurrentCell = lSelectedCell;
+                            lBuilderScr.mPreviousTurnCell = lBuilderScr.mCurrentCell;
 
                             if (lBuilderScr.setDefaultMaterial(lGM.mPlayers[lCurrentPlayer].mMaterial))
                             {
@@ -310,7 +311,7 @@ public class Board : MonoBehaviour
                             }
 
                             //declare the cell as occupied
-                            Cell mCellScr = lBuilderScr.mCell;
+                            Cell mCellScr = lBuilderScr.mCurrentCell;
                             mCellScr.mIsFree = false;
 
                             mAllBuilders.Add(lBuilderScr);

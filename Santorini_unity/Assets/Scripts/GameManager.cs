@@ -141,6 +141,7 @@ public class GameManager
 
     private void turnCompleted(int pNextPlayer)
     {
+        mPlayers[mCurrentPlayer].EndTurnPlayer();
         mCurrentPlayer = pNextPlayer;
         mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
     }
@@ -163,6 +164,7 @@ public class GameManager
 
         //Set First Player
         mCurrentPlayer = 0;
+        mPlayers[0].SetGod(God.Athena);
         mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
     }
 

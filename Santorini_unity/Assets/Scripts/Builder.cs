@@ -7,20 +7,27 @@ using UnityEngine.Events;
 public class Builder : BoardGameComponent
 {
     ///refers to the cell on wich the builder is located
-    public Cell mCell;
-    
+    public Cell mCurrentCell;
+
+    ///refers to the cell the builder was located during the previous turn
+    public Cell mPreviousTurnCell;
+
+    public bool mHasMovedThisTurn;
+
     ///Id of the player owner of the builder
     public int mPlayer;
 
     // Start is called before the first frame update
     void Start()
     {
-        if (mCell != null)
+        if (mCurrentCell != null)
         {
-            UpdatePosition();
+            UpdatePhysicalPosition();
+
+            mHasMovedThisTurn = false;
 
             //declare the cell as occupied
-            mCell.mIsFree = false;
+            mCurrentCell.mIsFree = false;
         }
     }
 
@@ -32,7 +39,7 @@ public class Builder : BoardGameComponent
     {
         GameManager lGM = GameManager.sGetInstance();
 
-        if (lGM.getGameState() == GameManager.GameState.PLAY && mCell.getBuildingLevel() == 3)
+        if (lGM.getGameState() == GameManager.GameState.PLAY && mCurrentCell.getBuildingLevel() == 3)
         {
             GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayer);
         }
@@ -41,12 +48,12 @@ public class Builder : BoardGameComponent
     ///get the list of all cells the builder can currently move to
     public List<Cell> getAllCellAvailableForMoving()
     {
-        List<Cell> lAvailableCells = new List<Cell>(mCell.mAdjoiningCells);
+        List<Cell> lAvailableCells = new List<Cell>(mCurrentCell.mAdjoiningCells);
 
         for (int i=0; i< lAvailableCells.Count; ++i)
         {
             Cell lCell = lAvailableCells[i];
-            if(!lCell.mIsFree || lCell.getBuildingLevel()-mCell.getBuildingLevel() >= 2 || lCell.getBuildingLevel() >= 4)
+            if(!isCellAvailableForMoving(lCell))
             {
                 lAvailableCells.RemoveAt(i);
                 i--;
@@ -59,7 +66,7 @@ public class Builder : BoardGameComponent
     ///get the list of all cells the builder can currently build on
     public List<Cell> getAllCellsAvailableForBuilding()
     {
-        List<Cell> lAvailableCells = new List<Cell>(mCell.mAdjoiningCells);
+        List<Cell> lAvailableCells = new List<Cell>(mCurrentCell.mAdjoiningCells);
 
         for (int i = 0; i < lAvailableCells.Count; ++i)
         {
@@ -77,13 +84,19 @@ public class Builder : BoardGameComponent
     ///return true if the builder is currently able to move to the cell as parameter
     private bool isCellAvailableForMoving(Cell pCell)
     {
-        return mCell.mAdjoiningCells.Contains(pCell) && (pCell.mIsFree && pCell.getBuildingLevel()-mCell.getBuildingLevel()<2) && pCell.getBuildingLevel() < 4;
+        GameManager lGM = GameManager.sGetInstance();
+
+        return mCurrentCell.mAdjoiningCells.Contains(pCell) && //Can move only on AdjoiningCell
+            pCell.mIsFree && //Can move only on cell not occupied by another builder
+            pCell.getBuildingLevel()-mCurrentCell.getBuildingLevel()<2 &&  //Cannot Got Up from more than 1 level at the time
+            pCell.getBuildingLevel() < 4 //Cannot move on floor 4 or above
+            && PowerManager.AthenaMoveRestriction(lGM,this,pCell); //Check Athena's power restriction (If a player with Athena has move up during his last turn, no other player can move up this turn)
     }
 
     ///return true if the builder is currently able to move to the cell as parameter
     private bool isCellAvailableForBuilding(Cell pCell)
     {
-        return mCell.mAdjoiningCells.Contains(pCell) && (pCell.mIsFree  && pCell.getBuildingLevel() < 4);
+        return mCurrentCell.mAdjoiningCells.Contains(pCell) && (pCell.mIsFree  && pCell.getBuildingLevel() < 4);
     }
 
     ///If the builder is able to move to pCell, do it and return true
@@ -95,18 +108,20 @@ public class Builder : BoardGameComponent
             return false;
         }
 
-        mCell.mIsFree = true;
-        mCell = pCell;
-        mCell.mIsFree = false;
-        UpdatePosition();
+        mCurrentCell.mIsFree = true;
+        mPreviousTurnCell = mCurrentCell;
+        mCurrentCell = pCell;
+        mHasMovedThisTurn = true;
+        mCurrentCell.mIsFree = false;
+        UpdatePhysicalPosition();
         return true;
     }
 
-    ///Reset the position of the builder based on the position of its cell and the number of floor it has
-    public void UpdatePosition()
+    ///Reset the position of the builder's GameObject based on the position of its cell and the number of floor it has
+    public void UpdatePhysicalPosition()
     {
-        Vector3 lCellPos = mCell.gameObject.transform.position;
-        float yPos = sPresetY[mCell.getBuildingLevel()];
+        Vector3 lCellPos = mCurrentCell.gameObject.transform.position;
+        float yPos = sPresetY[mCurrentCell.getBuildingLevel()];
         Vector3 lNewPos = new Vector3(lCellPos.x, yPos, lCellPos.z);
         gameObject.transform.SetPositionAndRotation(lNewPos, gameObject.transform.rotation);
     }
