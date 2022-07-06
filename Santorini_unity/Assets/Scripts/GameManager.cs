@@ -19,16 +19,30 @@ public partial class GameManager
     public const int sMIN_NBPLAYERS = 2;
     public const int sMAX_NBPLAYERS = 3;
 
+    /// <summary>
+    /// List of all the player in game
+    /// </summary>
     public List<Player> mPlayers;
+    /// <summary>
+    /// Id of the current player
+    /// </summary>
     private int mCurrentPlayer;
 
+    /// <summary>
+    /// Reference to the board
+    /// This reference is set once when the game start and cannot be modify later on.
+    /// </summary>
     private Board mBoard;
 
+    //GUI
     private GameObject mMenuGO;
     private GameObject mOptionMenuGO;
     private GameObject mVictoryGO;
     private GameObject mInGameGO;
 
+    /// <summary>
+    /// For Active power, define if the power is in use
+    /// </summary>
     public bool mIsPowerOn;
 
     public static GameManager sGetInstance()
@@ -81,11 +95,6 @@ public partial class GameManager
         return mCurrentPlayer;
     }
 
-    private void AddPlayers(int pNb)
-    {
-        mNbPlayers += pNb;
-    }
-
     public GameState GetGameState()
     {
         return mCurrentState;
@@ -114,19 +123,5 @@ public partial class GameManager
         mInGameGO.GetComponent<InGameUI>().UpdateActivePlayer(mCurrentPlayer, mPlayers[mCurrentPlayer].mMaterial);
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
         sInstance.mIsPowerOn = false;
-    }
-
-    private void Victory(int pIdWinner)
-    {
-        mInGameGO.SetActive(false);
-
-        string lStrVictory = $"PLAYER {pIdWinner+1} WON !";
-        Debug.Log(lStrVictory);
-		
-		mCurrentState = GameState.VICTORY;
-
-        mVictoryGO.SetActive(true);
-		GameObject lTxtVictoryGO = mVictoryGO.transform.Find("Txt_Victory").gameObject;
-		lTxtVictoryGO.GetComponent<Text>().text = lStrVictory;
     }
 }

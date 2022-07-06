@@ -20,9 +20,15 @@ public class Player
         mGod = God.None;
     }
 
+    /// <summary>
+    /// Set the god power for this player (this power cannot be changed during the GameState PLAY
+    /// </summary>
+    /// <param name="pGod"></param>
+    /// <returns></returns>
     public bool SetGod(God pGod)
     {
-        if (mGod == God.None) 
+        GameManager lGM = GameManager.sGetInstance();
+        if (lGM.GetGameState() != GameState.PLAY) 
         {
             mGod = pGod;
             return true;
@@ -31,6 +37,11 @@ public class Player
         return false;
     }
 
+    /// <summary>
+    /// Register an additional Builder
+    /// </summary>
+    /// <param name="pBuilder"></param>
+    /// <returns></returns>
     public bool AddBuilder(Builder pBuilder)
     {
         GameManager lGM = GameManager.sGetInstance();
@@ -45,6 +56,11 @@ public class Player
         return true;
     }
 
+    /// <summary>
+    /// Return the Builder correspondign to the given index
+    /// </summary>
+    /// <param name="pIndex"></param>
+    /// <returns></returns>
     public Builder GetBuilder(int pIndex)
     {
         if(pIndex>=0 && pIndex<mBuilders.Count)
@@ -53,6 +69,11 @@ public class Player
         return null;
     }
 
+    /// <summary>
+    /// Determine if at least of of its builder can move up
+    /// </summary>
+    /// <param name="pIndex"></param>
+    /// <returns></returns>
     public bool CanOneBuilderMoveUp()
     {
         bool lCanMoveUp = false;
@@ -63,6 +84,10 @@ public class Player
         return lCanMoveUp;
     }
 
+    /// <summary>
+    /// Return the number total of builders the player has
+    /// </summary>
+    /// <returns></returns>
     public int GetBuildersCount()
     {
         return mBuilders.Count;

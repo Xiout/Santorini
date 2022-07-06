@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 using static PowerManager;
 
 public partial class GameManager
@@ -21,7 +22,7 @@ public partial class GameManager
     //Event Victory
     public class VictoryEvent : UnityEvent<int> { }
     //Event Board Reset
-    public class BoardResetEvent : UnityEvent { }
+    public class BoardResetSuccessfullEvent : UnityEvent { }
     //Event Power Action Realised
     public class PowerExecutedEvent : UnityEvent { }
 
@@ -39,7 +40,7 @@ public partial class GameManager
     public BuildingPhaseCompletedEvent mBuildingEventComplet { get; private set; }
     public TurnCompletedEvent mTurnCompleted { get; private set; }
     public VictoryEvent mVictoryEvent { get; private set; }
-    public BoardResetEvent mBoardResetEvent { get; private set; }
+    public BoardResetSuccessfullEvent mBoardResetSuccessfullEvent { get; private set; }
     public ModificationNbPlayersEvent mModNbPlayersEvent { get; private set; }
     public PowerOnOffEvent mPowerOnOffEvent { get; private set; }
     public PowerExecutedEvent mPowerExecutedEvent { get; private set; }
@@ -67,11 +68,11 @@ public partial class GameManager
         pInstance.mVictoryEvent = new VictoryEvent();
         pInstance.mVictoryEvent.AddListener(sInstance.Victory);
         
-        pInstance.mBoardResetEvent = new BoardResetEvent();
-        pInstance.mBoardResetEvent.AddListener(sInstance.StartGame);
+        pInstance.mBoardResetSuccessfullEvent = new BoardResetSuccessfullEvent();
+        pInstance.mBoardResetSuccessfullEvent.AddListener(sInstance.StartGame);
         
         pInstance.mModNbPlayersEvent = new ModificationNbPlayersEvent();
-        pInstance.mModNbPlayersEvent.AddListener(sInstance.AddPlayers);
+        pInstance.mModNbPlayersEvent.AddListener(sInstance.ModifyNumberPlayers);
 
         pInstance.mPowerOnOffEvent = new PowerOnOffEvent();
         pInstance.mPowerOnOffEvent.AddListener(sInstance.PowerOnOff);
@@ -83,7 +84,7 @@ public partial class GameManager
     private void PlacingPhaseCompleted()
     {
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
-        mInGameGO.GetComponent<InGameUI>().SetPower(false);
+        mInGameGO.GetComponent<InGameUI>().SetColorButtonPower(false);
         sInstance.mIsPowerOn = false;
     }
 
@@ -98,7 +99,7 @@ public partial class GameManager
         mBoard.ResetHighlightCellsBoard();
 
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
-        mInGameGO.GetComponent<InGameUI>().SetPower(false);
+        mInGameGO.GetComponent<InGameUI>().SetColorButtonPower(false);
         sInstance.mIsPowerOn = false;
 
         if (mPlayers[mCurrentPlayer].mGod == God.Artemis)
@@ -118,7 +119,7 @@ public partial class GameManager
         mBoard.ResetHighlightCellsBoard();
 
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
-        mInGameGO.GetComponent<InGameUI>().SetPower(false);
+        mInGameGO.GetComponent<InGameUI>().SetColorButtonPower(false);
         sInstance.mIsPowerOn = false;
     }
 
@@ -136,6 +137,11 @@ public partial class GameManager
     {
         mCurrentState = GameState.PLAY;
         mInGamePhase = 0;
+    }
+
+    private void ModifyNumberPlayers(int pNb)
+    {
+        mNbPlayers += pNb;
     }
 
     private void PowerOnOff()
@@ -167,5 +173,19 @@ public partial class GameManager
         {
             mBuildingEventStart.Invoke();
         }
+    }
+
+    private void Victory(int pIdWinner)
+    {
+        mInGameGO.SetActive(false);
+
+        string lStrVictory = $"PLAYER {pIdWinner + 1} WON !";
+        Debug.Log(lStrVictory);
+
+        mCurrentState = GameState.VICTORY;
+
+        mVictoryGO.SetActive(true);
+        GameObject lTxtVictoryGO = mVictoryGO.transform.Find("Txt_Victory").gameObject;
+        lTxtVictoryGO.GetComponent<Text>().text = lStrVictory;
     }
 }

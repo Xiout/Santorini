@@ -11,6 +11,11 @@ public class InGameUI : MonoBehaviour
     public Material mMaterialPowerOn;
     public Material mMaterialPowerOff;
 
+    /// <summary>
+    /// Display which player is playing this turn
+    /// </summary>
+    /// <param name="pNumPlayer"></param>
+    /// <param name="pPlayerMaterial"></param>
     public void UpdateActivePlayer(int pNumPlayer, Material pPlayerMaterial)
     {
         GameManager lGM = GameManager.sGetInstance();
@@ -24,6 +29,10 @@ public class InGameUI : MonoBehaviour
         transTextCurrPlayer.GetComponent<Text>().text = $"Player {pNumPlayer + 1}";
     }
 
+    /// <summary>
+    /// Method linked to the button "Power".
+    /// This button allow to perform a specific action depending on the God power the current player has.
+    /// </summary>
     public void SwitchOnOffPower()
     {
         GameManager lGM = GameManager.sGetInstance();
@@ -32,11 +41,15 @@ public class InGameUI : MonoBehaviour
 
         Debug.Log("Switch On/Off Power : "+ lGM.mIsPowerOn);
 
-        SetPower(lGM.mIsPowerOn);
+        SetColorButtonPower(lGM.mIsPowerOn);
         lGM.mPowerOnOffEvent.Invoke();
     }
 
-    public void SetPower(bool pIsOn)
+    /// <summary>
+    /// Change the color of the button Power
+    /// </summary>
+    /// <param name="pIsOn"></param>
+    public void SetColorButtonPower(bool pIsOn)
     {
         Image imgCurrPlayer = mPower.transform.GetComponent<Image>();
         if (pIsOn)

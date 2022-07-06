@@ -154,12 +154,20 @@ public class OptionMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Update the name of the god on the GUI to match what it is currently selected
+    /// </summary>
+    /// <param name="pNumPlayer"></param>
+    /// <param name="pGodString"></param>
     public void UpdateGodLabel(int pNumPlayer, string pGodString)
     {
         Transform transLabelGod = mLinePlayers[pNumPlayer].transform.Find("Txt_God");
         transLabelGod.GetComponent<Text>().text = pGodString;
     }
 
+    /// <summary>
+    /// Is called at the start of of game to assign selected gods to players
+    /// </summary>
     public void SetAllGodPower()
     {
         GameManager lGM = GameManager.sGetInstance();

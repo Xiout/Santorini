@@ -4,14 +4,19 @@ using UnityEngine;
 
 public class Cell : BoardGameComponent
 {
-    ///List of all adjoning cells
+    /// <summary>
+    /// List of all cells that are next to this cell
+    /// </summary>
     public List<Cell> mAdjoiningCells;
 
-    ///Number of floor built on this cell
+    /// <summary>
+    /// Number of floor built on this cell
+    /// </summary>
     private int mBuildingLevel;
 
-    ///false : a builder is on this cell
-    ///true : no builder is on this cell
+    /// <summary>
+    /// Define is there is already a builder on this cell
+    /// </summary>
     public bool mIsFree;
 
     private void Awake()
@@ -20,19 +25,31 @@ public class Cell : BoardGameComponent
         mBuildingLevel = 0;
     }
 
-    /// getter of the number of floor the cell currently have
+    /// <summary>
+    /// Getter of the number of floor the cell currently have
+    /// </summary>
+    /// <returns></returns>
     public int GetBuildingLevel()
     {
         return mBuildingLevel;
     }
 
+    /// <summary>
+    /// Return true is the cell is on the side of the board
+    /// </summary>
+    /// <returns></returns>
     public bool IsPerimeter()
     {
         return mAdjoiningCells.Count < 8;
     }
 
-    ///If it's possible to build on this cell, do it and return true
-    ///If not, return false
+    //If it's possible to build on this cell, do it and return true
+    //If not, return false
+    /// <summary>
+    /// Perform a build ff it's possible to build on this cell and return true 
+    /// If not, return false
+    /// </summary>
+    /// <returns></returns>
     public bool TryBuild()
     {
         if(mBuildingLevel<4 && mIsFree)
@@ -43,6 +60,9 @@ public class Cell : BoardGameComponent
         return false;
     }
 
+    /// <summary>
+    /// Reset the cell and remove physical Building level that is on it
+    /// </summary>
     public void ClearCell()
     {
         mIsFree = true;

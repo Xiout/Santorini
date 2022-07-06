@@ -18,23 +18,24 @@ public class PowerManager
         Pan,          //Win Condition: You also win if your Builder moves down two or more levels.
         //Prometheus, //Your Turn: If your Builder does not move up, it may build both before and after moving.
         //Zeus,       //Your Build: Your Builder may build a block under them.
-        //Triton,     //Your Move: Each time your Worker moves into a perimeter space, it may immediately move again.
-        //Poseidon,   //End of Your Turn: If your unmoved Worker is on the ground level, it may build up to three times.
-        Persephone,   //Opponent’s Turn: If possible, at least one Worker must move up this turn.
-        //Limus,      //Opponent’s Turn: Opponent Workers cannot build on spaces neighboring your Workers, unless building a dome to create a Complete Tower.
-        //Hypnus,     //Start of Opponent’s Turn: If one of your opponent’s Workers is higher than all of their others, it cannot move.
-        //Hestia,     //Your Build: Your Worker may build one additional time, but this cannot be on a perimeter space.
+        //Triton,     //Your Move: Each time your Builder moves into a perimeter space, it may immediately move again.
+        //Poseidon,   //End of Your Turn: If your unmoved Builder is on the ground level, it may build up to three times.
+        Persephone,   //Opponent’s Turn: If possible, at least one Builder must move up this turn.
+        //Limus,      //Opponent’s Turn: Opponent Builders cannot build on spaces neighboring your Builders, unless building a dome to create a Complete Tower.
+        //Hypnus,     //Start of Opponent’s Turn: If one of your opponent’s Builders is higher than all of their others, it cannot move.
+        //Hestia,     //Your Build: Your Builder may build one additional time, but this cannot be on a perimeter space.
         Hera,         //Opponent’s Turn: An opponent cannot win by moving into a perimeter space.
-        //Dionysus,   //Your Build: Each time a Worker you control creates a Complete Tower, you may take an additional turn using an opponent Worker instead of your own. No player can win during these additional turns.
+        //Dionysus,   //Your Build: Each time a Builder you control creates a Complete Tower, you may take an additional turn using an opponent Builder instead of your own. No player can win during these additional turns.
         //Chronus,    //Win Condition: You also win when there are at least five Complete Towers on the board.
-        //Charon,     //Your Move: Before your Worker moves, you may force a neighboring opponent Worker to the space directly on the other side of your Worker, if that space is unoccupied.
-        //Bia,        //Any Move: If an opponent Worker starts its turn neighboring one of your Workers, its last move must be to a space neighboring one of your Workers.
-        //Ares,       //End of Your Turn: You may remove an unoccupied block (not dome) neighboring your unmoved Worker.
-        //Aphrodite,  //Any Move: If an opponent Worker starts its turn neighboring one of your Workers, its last move must be to a space neighboring one of your Workers.
+        //Charon,     //Your Move: Before your Builder moves, you may force a neighboring opponent Builder to the space directly on the other side of your Builder, if that space is unoccupied.
+        //Bia,        //Any Move: If an opponent Builder starts its turn neighboring one of your Builders, its last move must be to a space neighboring one of your Builders.
+        //Ares,       //End of Your Turn: You may remove an unoccupied block (not dome) neighboring your unmoved Builder.
+        //Aphrodite,  //Any Move: If an opponent Builder starts its turn neighboring one of your Builders, its last move must be to a space neighboring one of your Builders.
     }
 
     /// <summary>
-    /// Define if the pBuilder is allowed to move into pCell according to Athena move restriction rule
+    /// Define if the pBuilder is allowed to move into pCell according to Athena's move restriction rule
+    /// Opponent cannot move up this turn if Athena moved up on their last turn
     /// Note : Other moving conditions are not taking in account in this method
     /// </summary>
     /// <param name="pGM"></param>
@@ -74,6 +75,14 @@ public class PowerManager
         return pBuilder.mCurrentCell.GetBuildingLevel() >= pCell.GetBuildingLevel();
     }
 
+    /// <summary>
+    /// Define if the given builder is allowed to move into the given cell according to Artemis's move restriction rule.
+    /// This restriction must concern only the second move of the player that has Artemis Power
+    /// Artemis cannot move back to their initial cell
+    /// </summary>
+    /// <param name="pBuilder"></param>
+    /// <param name="pCell"></param>
+    /// <returns></returns>
     public static bool ArtemisSecondMoveRestriction(Builder pBuilder, Cell pCell)
     {
         if(pBuilder.mHasMovedThisTurn && pBuilder.mPreviousTurnCell == pCell)
@@ -84,6 +93,12 @@ public class PowerManager
         return true;
     }
 
+    /// <summary>
+    /// Define if the builder can win on this cell position according to Hera's win restriction rule.
+    /// Opponent cannot win on perimeter cells
+    /// </summary>
+    /// <param name="pBuilder"></param>
+    /// <returns></returns>
     public static bool HeraWinRestriction(Builder pBuilder)
     {
         GameManager lGM = GameManager.sGetInstance();
@@ -104,6 +119,13 @@ public class PowerManager
         return !pBuilder.mCurrentCell.IsPerimeter();
     }
 
+    /// <summary>
+    /// Define if the given builder is allowed to move into the given cell according to Persephone's move restriction rule. 
+    /// Persephone forces their opponent to move up everytime it is possible
+    /// </summary>
+    /// <param name="pBuilder"></param>
+    /// <param name="pCell"></param>
+    /// <returns></returns>
     public static bool PersephoneMoveRestriction(Builder pBuilder, Cell pCell)
     {
         GameManager lGM = GameManager.sGetInstance();

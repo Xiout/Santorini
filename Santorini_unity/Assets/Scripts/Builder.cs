@@ -7,24 +7,32 @@ using static PowerManager;
 
 public class Builder : BoardGameComponent
 {
-    ///refers to the cell on wich the builder is located
+    /// <summary>
+    /// Refers to the cell on wich the builder is located
+    /// </summary>
     public Cell mCurrentCell;
 
-    ///refers to the cell the builder was located during the previous turn
+    /// <summary>
+    /// Refers to the cell the builder was located during the previous turn
+    /// </summary>
     public Cell mPreviousTurnCell;
 
+    /// <summary>
+    /// Indicate if this builder has moved this turn
+    /// This is reset when the turn or the next player start
+    /// </summary>
     public bool mHasMovedThisTurn;
 
-    ///Id of the player owner of the builder
+    /// <summary>
+    /// Id of the player owner of the builder
+    /// </summary>
     public int mPlayerIndex;
 
-    // Start is called before the first frame update
     void Start()
     {
         if (mCurrentCell != null)
         {
             UpdatePhysicalPosition();
-
             mHasMovedThisTurn = false;
 
             //declare the cell as occupied
@@ -32,12 +40,14 @@ public class Builder : BoardGameComponent
         }
     }
 
-    ///Values for Y depending on the number of floor a cell have (from 0-1)
+    /// <summary>
+    /// Values for Y to set when the Builder move to a cell depending on the number of floor a cell have
+    /// </summary>
     public static readonly float[] sPresetY = { 1.0f, 2.95f, 5.25f, 6.50f };
 
-    // Update is called once per frame
     void Update()
     {
+        //This update handle Victory Conditions
         GameManager lGM = GameManager.sGetInstance();
         
         if (mPlayerIndex != lGM.GetCurrentPlayer())
@@ -66,8 +76,11 @@ public class Builder : BoardGameComponent
         
     }
 
-    ///get the list of all cells the builder can currently move to
-    public List<Cell> getAllCellsAvailableForMoving()
+    /// <summary>
+    /// Get the list of all cells the builder can currently move to
+    /// </summary>
+    /// <returns></returns>
+    public List<Cell> GetAllCellsAvailableForMoving()
     {
         List<Cell> lAvailableCells = new List<Cell>(mCurrentCell.mAdjoiningCells);
 
@@ -84,7 +97,10 @@ public class Builder : BoardGameComponent
         return lAvailableCells;
     }
 
-    ///get the list of all cells the builder can currently build on
+    /// <summary>
+    /// Get the list of all cells the builder can currently build on
+    /// </summary>
+    /// <returns></returns>
     public List<Cell> GetAllCellsAvailableForBuilding()
     {
         List<Cell> lAvailableCells = new List<Cell>(mCurrentCell.mAdjoiningCells);
@@ -102,7 +118,11 @@ public class Builder : BoardGameComponent
         return lAvailableCells;
     }
 
-    ///return true if the builder is currently able to move to the cell as parameter
+    /// <summary>
+    /// Return true if the builder is currently able to move to the given cell
+    /// </summary>
+    /// <param name="pCell"></param>
+    /// <returns></returns>
     private bool IsCellAvailableForMoving(Cell pCell)
     {
         GameManager lGM = GameManager.sGetInstance();
@@ -117,7 +137,11 @@ public class Builder : BoardGameComponent
             //&& PowerManager.PersephoneMoveRestriction(this, pCell); //Check Persephone's Power restriction (Opponent must go up if possible)
     }
 
-    ///return true if the builder is currently able to move to the cell as parameter
+    /// <summary>
+    /// Return true if the builder is currently able to build on the given cell
+    /// </summary>
+    /// <param name="pCell"></param>
+    /// <returns></returns>
     private bool IsCellAvailableForBuilding(Cell pCell)
     {
         return mCurrentCell.mAdjoiningCells.Contains(pCell) //Can build only on Adjoining cells
@@ -125,6 +149,10 @@ public class Builder : BoardGameComponent
             && pCell.GetBuildingLevel() < 4; //Cannot build above 4th level
     }
 
+    /// <summary>
+    /// Return true is the builder has at least one option to move up from its current cell
+    /// </summary>
+    /// <returns></returns>
     public bool CanMoveUp()
     {
         for(int i=0; i<mCurrentCell.mAdjoiningCells.Count; ++i)
@@ -139,8 +167,12 @@ public class Builder : BoardGameComponent
         return false;
     }
 
-    ///If the builder is able to move to pCell, do it and return true
-    ///If not, return false
+    /// <summary>
+    /// If the builder is able to move to the given cell, perform the movement and return true
+    /// If not, return false
+    /// </summary>
+    /// <param name="pCell"></param>
+    /// <returns></returns>
     public bool TryMove(Cell pCell)
     {
         if (!(IsCellAvailableForMoving(pCell) && PowerManager.PersephoneMoveRestriction(this, pCell)))
@@ -171,7 +203,9 @@ public class Builder : BoardGameComponent
         return true;
     }
 
-    ///Reset the position of the builder's GameObject based on the position of its cell and the number of floor it has
+    /// <summary>
+    /// Reset the position of the builder's GameObject based on the position of its cell and the number of floor it has
+    /// </summary>
     public void UpdatePhysicalPosition()
     {
         Vector3 lCellPos = mCurrentCell.gameObject.transform.position;

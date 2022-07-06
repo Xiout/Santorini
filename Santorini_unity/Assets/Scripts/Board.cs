@@ -8,31 +8,60 @@ using static PowerManager;
 public class Board : MonoBehaviour
 {
     //board dimensions
-    ///dimension X of the board
+
+    /// <summary>
+    /// dimension X of the board
+    /// </summary>
     public int mNbCellsPerRow;
-    ///dimension Z of the board
+
+    /// <summary>
+    /// dimension Z of the board
+    /// </summary>
     public int mNbCellsPerColumn;
 
-    ///material assigned for selected object
+    /// <summary>
+    /// Material assigned for selected object or highligted cells where the current action is performable
+    /// </summary>
     public Material mMaterialSelectedObj;
 
-    ///cell material 
+    /// <summary>
+    /// Default cell material (used to reset the cell aspect to remove the highlight)
+    /// </summary>
     public Material mCellMaterial;
-    ///players' builder material
-    ///the size of this list MUST be equal to mNbPlayers
-    //public List<Material> mPlayersMaterial;
 
+    /// <summary>
+    /// List contains prefabs for all 4 level of a building
+    /// </summary>
     public List<GameObject> mBuildingPrefabs;
 
-    ///List of all cells of the board
-    ///This list is automatically filled at the generation of the cells
-    ///each Cell is attached to a primitive gameobject "plane"
+    /// <summary>
+    /// List of all cells of the board
+    /// This list is automatically filled at the generation of the cell
+    /// Each Cell is attached to a primitive gameobject "plane"
+    /// Cells are BoardGameComponent
+    /// </summary>
     private List<Cell> mAllCells;
-    ///List of builders
+
+    /// <summary>
+    /// List of the Builder in game
+    /// Builders are paws controllable by the player
+    /// Each Builder is attached to a primitive gameobject "capsule"
+    /// Builders are BoardGameComponent
+    /// </summary>
     private List<Builder> mAllBuilders;
 
+    /// <summary>
+    /// Indicate which element had been clicked on
+    /// This can be either a Builder or a Cell
+    /// All other type of gameobject are ignored from the selection
+    /// </summary>
     private BoardGameComponent mSelectedBGComp;
     
+    /// <summary>
+    /// Return the builder that is located on the current cell if any
+    /// </summary>
+    /// <param name="pCell"></param>
+    /// <returns></returns>
     public Builder GetBuilderAtCell(Cell pCell)
     {
         for(int i=0; i < mAllBuilders.Count; ++i)
@@ -43,7 +72,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        return null;     
+        return null;      
     }
 
     void Start()
@@ -144,7 +173,7 @@ public class Board : MonoBehaviour
         {
             ClearBoard();
             Debug.Log("Board Cleared Sucessfully");
-            lGM.mBoardResetEvent.Invoke();
+            lGM.mBoardResetSuccessfullEvent.Invoke();
         }
 
         if(lGM.GetGameState() == GameManager.GameState.PLAY)
@@ -285,7 +314,7 @@ public class Board : MonoBehaviour
                             lBuilder = mSelectedBGComp as Builder;
                             if (lBuilder != null && mAllBuilders.Contains(lBuilder))
                             {
-                                List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForMoving();
+                                List<Cell> lAvailableCells = lBuilder.GetAllCellsAvailableForMoving();
                                 for (int i = 0; i < lAvailableCells.Count; ++i)
                                 {
                                     lAvailableCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
@@ -408,6 +437,9 @@ public class Board : MonoBehaviour
         HighlightCells(mAllCells, false);
     }
 
+    /// <summary>
+    /// Highlight the cells that are accessible to move to with the currently selected Builder
+    /// </summary>
     public void HightlightCellsAvailableMoving()
     {
         if (mSelectedBGComp == null) 
@@ -418,10 +450,13 @@ public class Board : MonoBehaviour
         if (lBuilder == null)
             return;
 
-        HighlightCells(lBuilder.getAllCellsAvailableForMoving(), true);
+        HighlightCells(lBuilder.GetAllCellsAvailableForMoving(), true);
         return;
     }
 
+    /// <summary>
+    /// Highlight the cells that are accessible to build on with the currently selected Builder
+    /// </summary>
     public void HighlightCellsAvailableBuilding()
     {
         if (mSelectedBGComp == null)
@@ -436,6 +471,11 @@ public class Board : MonoBehaviour
         return;
     }
     
+    /// <summary>
+    /// Hightlight or Reset the cells given in parameter
+    /// </summary>
+    /// <param name="pCells">List of Cells affected by the change</param>
+    /// <param name="pOn">true to highlight, false to reset</param>
     private void HighlightCells(List<Cell> pCells, bool pOn)
     {
         for (int i = 0; i < pCells.Count; ++i)
