@@ -107,7 +107,7 @@ public partial class GameManager
         mInGameGO.SetActive(true);
 
         //Set God
-        mPlayers[0].SetGod(God.Athena);
+        mPlayers[0].SetGod(God.Apollo);
         mPlayers[1].SetGod(God.Pan);
 
         //Set First Player

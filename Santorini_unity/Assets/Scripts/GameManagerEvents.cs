@@ -95,7 +95,7 @@ public partial class GameManager
 
     private void MovingPhaseCompleted()
     {
-        mBoard.ResetBoard();
+        mBoard.ResetHighlightCellsBoard();
 
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
         mInGameGO.GetComponent<InGameUI>().SetPower(false);
@@ -115,7 +115,7 @@ public partial class GameManager
 
     private void BuildingPhaseCompleted()
     {
-        mBoard.ResetBoard();
+        mBoard.ResetHighlightCellsBoard();
 
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
         mInGameGO.GetComponent<InGameUI>().SetPower(false);
@@ -140,7 +140,7 @@ public partial class GameManager
 
     private void PowerOnOff()
     {
-        mBoard.ResetBoard();
+        mBoard.ResetHighlightCellsBoard();
 
         if (mIsPowerOn)
         {
@@ -161,7 +161,7 @@ public partial class GameManager
 
     private void PowerExecuted()
     {
-        mBoard.ResetBoard();
+        mBoard.ResetHighlightCellsBoard();
 
         if (mPlayers[mCurrentPlayer].mGod == God.Artemis)
         {

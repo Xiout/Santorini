@@ -106,9 +106,10 @@ public class Builder : BoardGameComponent
     private bool isCellAvailableForMoving(Cell pCell)
     {
         GameManager lGM = GameManager.sGetInstance();
+        Player lPlayer = lGM.mPlayers.Find(p => p.mIndex == mPlayerIndex);
 
         return mCurrentCell.mAdjoiningCells.Contains(pCell) && //Can move only on Adjoining Cells
-            pCell.mIsFree && //Can move only on cell not occupied by another builder
+            (pCell.mIsFree || lPlayer.mGod==God.Apollo) && //Can move only on cell not occupied by another builder (expect with specific god power)
             pCell.getBuildingLevel()-mCurrentCell.getBuildingLevel()<2 &&  //Cannot Got Up from more than 1 level at the time
             pCell.getBuildingLevel() < 4 //Cannot move on floor 4 or above
             && PowerManager.AthenaMoveRestriction(this, pCell) //Check Athena's power restriction (If a player with Athena has move up during his last turn, no other player can move up this turn)
@@ -132,11 +133,25 @@ public class Builder : BoardGameComponent
             return false;
         }
 
-        mCurrentCell.mIsFree = true;
+        GameManager lGM = GameManager.sGetInstance();
+        Player lPlayer = lGM.mPlayers.Find(p => p.mIndex == mPlayerIndex);
+
+        if (lPlayer.mGod == God.Apollo && !pCell.mIsFree)
+        {
+            Builder lBuilder = lGM.GetBoard().GetBuilderAtCell(pCell);
+            lBuilder.mCurrentCell = this.mCurrentCell;
+            lBuilder.UpdatePhysicalPosition();
+        }
+        else
+        {
+            mCurrentCell.mIsFree = true;
+        }
+
         mPreviousTurnCell = mCurrentCell;
         mCurrentCell = pCell;
         mHasMovedThisTurn = true;
         mCurrentCell.mIsFree = false;
+
         UpdatePhysicalPosition();
         return true;
     }

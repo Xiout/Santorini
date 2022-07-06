@@ -32,6 +32,20 @@ public class Board : MonoBehaviour
     private List<Builder> mAllBuilders;
 
     private BoardGameComponent mSelectedBGComp;
+    
+    public Builder GetBuilderAtCell(Cell pCell)
+    {
+        for(int i=0; i < mAllBuilders.Count; ++i)
+        {
+            if(mAllBuilders[i].mCurrentCell == pCell)
+            {
+                return mAllBuilders[i];
+            }
+        }
+
+        return null;     
+    }
+
     void Start()
     {
         mAllBuilders = new List<Builder>();
@@ -364,6 +378,9 @@ public class Board : MonoBehaviour
         }//End of if GameState = PLAY
     }
 
+    /// <summary>
+    /// Remove all Builders and clear the cell to start a new game
+    /// </summary>
     private void ClearBoard()
     {
         //Clear Builders
@@ -383,7 +400,10 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void ResetBoard()
+    /// <summary>
+    /// Reset default material on all the cells of the board to remove any highlight
+    /// </summary>
+    public void ResetHighlightCellsBoard()
     {
         HighlightCells(mAllCells, false);
     }
