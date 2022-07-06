@@ -46,7 +46,7 @@ public class Builder : BoardGameComponent
     }
 
     ///get the list of all cells the builder can currently move to
-    public List<Cell> getAllCellAvailableForMoving()
+    public List<Cell> getAllCellsAvailableForMoving()
     {
         List<Cell> lAvailableCells = new List<Cell>(mCurrentCell.mAdjoiningCells);
 
@@ -71,7 +71,7 @@ public class Builder : BoardGameComponent
         for (int i = 0; i < lAvailableCells.Count; ++i)
         {
             Cell lCell = lAvailableCells[i];
-            if (!lCell.mIsFree || lCell.getBuildingLevel() == 4 )
+            if (!isCellAvailableForBuilding(lCell))
             {
                 lAvailableCells.RemoveAt(i);
                 i--;
@@ -86,7 +86,7 @@ public class Builder : BoardGameComponent
     {
         GameManager lGM = GameManager.sGetInstance();
 
-        return mCurrentCell.mAdjoiningCells.Contains(pCell) && //Can move only on AdjoiningCell
+        return mCurrentCell.mAdjoiningCells.Contains(pCell) && //Can move only on Adjoining Cells
             pCell.mIsFree && //Can move only on cell not occupied by another builder
             pCell.getBuildingLevel()-mCurrentCell.getBuildingLevel()<2 &&  //Cannot Got Up from more than 1 level at the time
             pCell.getBuildingLevel() < 4 //Cannot move on floor 4 or above
@@ -97,7 +97,9 @@ public class Builder : BoardGameComponent
     ///return true if the builder is currently able to move to the cell as parameter
     private bool isCellAvailableForBuilding(Cell pCell)
     {
-        return mCurrentCell.mAdjoiningCells.Contains(pCell) && (pCell.mIsFree  && pCell.getBuildingLevel() < 4);
+        return mCurrentCell.mAdjoiningCells.Contains(pCell) //Can build only on Adjoining cells
+            && pCell.mIsFree //Cannot build on occupied cells
+            && pCell.getBuildingLevel() < 4; //Cannot build above 4th level
     }
 
     ///If the builder is able to move to pCell, do it and return true

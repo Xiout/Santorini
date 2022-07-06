@@ -5,7 +5,6 @@ using static GameManager;
 using static PowerManager;
 
 ///Managing script of the board
-//TODO : Tranformer en singleton ?
 public class Board : MonoBehaviour
 {
     //board dimensions
@@ -188,13 +187,10 @@ public class Board : MonoBehaviour
                                         Cell lPrevCell = lBuilder.mCurrentCell;
                                         if (lBuilder.TryMove(lClickedCell))
                                         {
-                                            //changing to building phase
-                                            lGM.mMovingEvent.Invoke();
-
-                                            //reset the default material on all adjacent cells of the Builder's previous cell
-                                            ResetMaterialOnAllAdjacentCells(lPrevCell);
-                                            //the builder stay selected for the building phase
-                                            HightlightBuildingCell(lBuilder);
+                                            //Complete Moving Phase
+                                            lGM.mMovingEventComplet.Invoke();
+                                            //Start Building Phase
+                                            lGM.mBuildingEventStart.Invoke();
                                         }
                                         break;
                                     }
@@ -209,11 +205,6 @@ public class Board : MonoBehaviour
                                             {
                                                 //changing to building phase
                                                 lGM.mPowerExecutedEvent.Invoke();
-
-                                                //reset the default material on all adjacent cells of the Builder's previous cell
-                                                ResetMaterialOnAllAdjacentCells(lPrevCell);
-                                                //the builder stay selected for the building phase
-                                                HightlightBuildingCell(lBuilder);
                                             }
                                             break;
                                         }
@@ -231,20 +222,18 @@ public class Board : MonoBehaviour
                                                 GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.getBuildingLevel() - 1], lClickedCell.transform.position, new Quaternion());
                                                 building.transform.SetParent(lClickedCell.transform);
 
-                                                //reset the default material on all available for build cells
-                                                List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
-                                                for (int i = 0; i < lAvailableCells.Count; ++i)
-                                                {
-                                                    lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ResetMaterial();
-                                                }
+                                                //reset the default material on all adjacing cells of the builder
+                                                HighlightCells(lBuilder.mCurrentCell.mAdjoiningCells, false);
+
                                                 //deselect the current builder
                                                 mSelectedBGComp.GetComponent<BoardGameComponent>().ResetMaterial();
                                                 mSelectedBGComp = null;
 
                                                 //change of game phase and turn
                                                 lClickedCell.GetComponent<BoardGameComponent>().ResetMaterial();
-                                                lGM.mBuildingEvent.Invoke();
+                                                lGM.mBuildingEventComplet.Invoke();
                                                 lGM.mTurnCompleted.Invoke((lCurrentPlayer.mIndex + 1) % lGM.GetNbPlayers());
+                                                lGM.mMovingEventStart.Invoke();
                                             }
                                         } 
                                     }
@@ -282,7 +271,7 @@ public class Board : MonoBehaviour
                             lBuilder = mSelectedBGComp as Builder;
                             if (lBuilder != null && mAllBuilders.Contains(lBuilder))
                             {
-                                List<Cell> lAvailableCells = lBuilder.getAllCellAvailableForMoving();
+                                List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForMoving();
                                 for (int i = 0; i < lAvailableCells.Count; ++i)
                                 {
                                     lAvailableCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
@@ -347,8 +336,8 @@ public class Board : MonoBehaviour
 
                             if (mAllBuilders.Count >= lGM.GetNbPlayers() * 2)
                             {
-                                //mGamePhase = 1;
                                 lGM.mPlacingEvent.Invoke();
+                                lGM.mMovingEventStart.Invoke();
                             }
 
                             //reinitialisation of the aspect of the cell
@@ -365,11 +354,7 @@ public class Board : MonoBehaviour
                             Builder lSelectedBuilder = mSelectedBGComp as Builder;
                             if (mAllBuilders.Contains(lSelectedBuilder))
                             {
-                                List<Cell> lAvailableCells = lSelectedBuilder.getAllCellAvailableForMoving();
-                                for (int i = 0; i < lAvailableCells.Count; ++i)
-                                {
-                                    lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
-                                }
+                                HightlightCellsAvailableMoving();
                             }
                         }
                     }
@@ -398,21 +383,51 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void HightlightBuildingCell(Builder lBuilder)
+    public void ResetBoard()
     {
-        //Painting cells for building
-        List<Cell> lAvailableCells = lBuilder.getAllCellsAvailableForBuilding();
-        for (int i = 0; i < lAvailableCells.Count; ++i)
-        {
-            lAvailableCells[i].gameObject.GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
-        }
+        HighlightCells(mAllCells, false);
     }
 
-    private static void ResetMaterialOnAllAdjacentCells(Cell pCell)
+    public void HightlightCellsAvailableMoving()
     {
-        for (int i = 0; i < pCell.mAdjoiningCells.Count; ++i)
+        if (mSelectedBGComp == null) 
+            return;
+
+        Builder lBuilder = mSelectedBGComp as Builder;
+
+        if (lBuilder == null)
+            return;
+
+        HighlightCells(lBuilder.getAllCellsAvailableForMoving(), true);
+        return;
+    }
+
+    public void HighlightCellsAvailableBuilding()
+    {
+        if (mSelectedBGComp == null)
+            return;
+
+        Builder lBuilder = mSelectedBGComp as Builder;
+
+        if (lBuilder == null)
+            return;
+
+        HighlightCells(lBuilder.getAllCellsAvailableForBuilding(), true);
+        return;
+    }
+    
+    private void HighlightCells(List<Cell> pCells, bool pOn)
+    {
+        for (int i = 0; i < pCells.Count; ++i)
         {
-            pCell.mAdjoiningCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
+            if(pOn)
+            {
+                pCells[i].GetComponent<BoardGameComponent>().ApplyMaterial(mMaterialSelectedObj);
+            }
+            else
+            {
+                pCells[i].GetComponent<BoardGameComponent>().ResetMaterial();
+            }
         }
     }
 }

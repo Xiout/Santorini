@@ -8,8 +8,12 @@ public partial class GameManager
     //In Game Events
     //Event placing phase complete
     public class PlacingPhaseCompletedEvent : UnityEvent { }
+    //Event moving phase start
+    public class MovingPhaseStartEvent : UnityEvent { }
     //Event moving phase complete
     public class MovingPhaseCompletedEvent : UnityEvent { }
+    //Event building phase start
+    public class BuildingPhaseStartEvent : UnityEvent { }
     //Event building phase complete
     public class BuildingPhaseCompletedEvent : UnityEvent { }
     //Event Turn Completed
@@ -28,26 +32,34 @@ public partial class GameManager
     public class PowerOnOffEvent : UnityEvent { }
     #endregion
 
-    public PlacingPhaseCompletedEvent mPlacingEvent;
-    public MovingPhaseCompletedEvent mMovingEvent;
-    public BuildingPhaseCompletedEvent mBuildingEvent;
-    public TurnCompletedEvent mTurnCompleted;
-    public VictoryEvent mVictoryEvent;
-    public BoardResetEvent mBoardResetEvent;
-    public ModificationNbPlayersEvent mModNbPlayersEvent;
-    public PowerOnOffEvent mPowerOnOffEvent;
-    public PowerExecutedEvent mPowerExecutedEvent;
+    public PlacingPhaseCompletedEvent mPlacingEvent { get; private set; }
+    public MovingPhaseStartEvent mMovingEventStart { get; private set; }
+    public BuildingPhaseStartEvent mBuildingEventStart { get; private set; }
+    public MovingPhaseCompletedEvent mMovingEventComplet { get; private set; }
+    public BuildingPhaseCompletedEvent mBuildingEventComplet { get; private set; }
+    public TurnCompletedEvent mTurnCompleted { get; private set; }
+    public VictoryEvent mVictoryEvent { get; private set; }
+    public BoardResetEvent mBoardResetEvent { get; private set; }
+    public ModificationNbPlayersEvent mModNbPlayersEvent { get; private set; }
+    public PowerOnOffEvent mPowerOnOffEvent { get; private set; }
+    public PowerExecutedEvent mPowerExecutedEvent { get; private set; }
 
     private static void SetUpEvents(GameManager pInstance)
     {
         pInstance.mPlacingEvent = new PlacingPhaseCompletedEvent();
         pInstance.mPlacingEvent.AddListener(sInstance.PlacingPhaseCompleted);
+
+        pInstance.mMovingEventStart = new MovingPhaseStartEvent();
+        pInstance.mMovingEventStart.AddListener(sInstance.MovingPhaseStart);
         
-        pInstance.mMovingEvent = new MovingPhaseCompletedEvent();
-        pInstance.mMovingEvent.AddListener(sInstance.MovingPhaseCompleted);
-        
-        pInstance.mBuildingEvent = new BuildingPhaseCompletedEvent();
-        pInstance.mBuildingEvent.AddListener(sInstance.BuildingPhaseCompleted);
+        pInstance.mMovingEventComplet = new MovingPhaseCompletedEvent();
+        pInstance.mMovingEventComplet.AddListener(sInstance.MovingPhaseCompleted);
+
+        pInstance.mBuildingEventStart = new BuildingPhaseStartEvent();
+        pInstance.mBuildingEventStart.AddListener(sInstance.BuildingPhaseStart);
+
+        pInstance.mBuildingEventComplet = new BuildingPhaseCompletedEvent();
+        pInstance.mBuildingEventComplet.AddListener(sInstance.BuildingPhaseCompleted);
         
         pInstance.mTurnCompleted = new TurnCompletedEvent();
         pInstance.mTurnCompleted.AddListener(sInstance.TurnCompleted);
@@ -73,12 +85,18 @@ public partial class GameManager
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
         mInGameGO.GetComponent<InGameUI>().SetPower(false);
         sInstance.mIsPowerOn = false;
+    }
 
+   
+    private void MovingPhaseStart()
+    {
         mInGamePhase = InGamePhase.MOVE;
     }
 
     private void MovingPhaseCompleted()
     {
+        mBoard.ResetBoard();
+
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
         mInGameGO.GetComponent<InGameUI>().SetPower(false);
         sInstance.mIsPowerOn = false;
@@ -87,17 +105,21 @@ public partial class GameManager
         {
             mInGameGO.GetComponent<InGameUI>().mPower.interactable = true;
         }
+    }
 
+    private void BuildingPhaseStart()
+    {
         mInGamePhase = InGamePhase.BUILD;
+        mBoard.HighlightCellsAvailableBuilding();
     }
 
     private void BuildingPhaseCompleted()
     {
+        mBoard.ResetBoard();
+
         mInGameGO.GetComponent<InGameUI>().mPower.interactable = false;
         mInGameGO.GetComponent<InGameUI>().SetPower(false);
         sInstance.mIsPowerOn = false;
-
-        mInGamePhase = InGamePhase.MOVE;
     }
 
     private void TurnCompleted(int pNextPlayer)
@@ -118,26 +140,32 @@ public partial class GameManager
 
     private void PowerOnOff()
     {
-        Debug.Log("POWER EVENT : "+mIsPowerOn);
+        mBoard.ResetBoard();
 
         if (mIsPowerOn)
         {
             mInGamePhase = InGamePhase.POWER;
+            if (mPlayers[mCurrentPlayer].mGod == God.Artemis)
+            {
+                mBoard.HightlightCellsAvailableMoving();
+            }
         }
         else 
         { 
             if(mPlayers[mCurrentPlayer].mGod == God.Artemis)
             {
-                mInGamePhase = InGamePhase.BUILD;
+                mBuildingEventStart.Invoke();
             }
         }
     }
 
     private void PowerExecuted()
     {
+        mBoard.ResetBoard();
+
         if (mPlayers[mCurrentPlayer].mGod == God.Artemis)
         {
-            mInGamePhase = InGamePhase.BUILD;
+            mBuildingEventStart.Invoke();
         }
     }
 }
