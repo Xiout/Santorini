@@ -15,7 +15,7 @@ public class PowerManager
         //Hephaestus, //Your Build: Your Worker may build one additional block (not dome) on top of your first block.
         //Hermes,     //Your Turn: If your Workers do not move up or down, they may each move any number of times (even zero), and then either builds
         //Minotaur,   //Your Move: Your Worker may move into an opponent Worker's space, if their Worker can be forced one space straight backwards to an unoccupied space at any level.
-        //Pan,        //Win Condition: You also win if your Worker moves down two or more levels.
+        Pan,          //Win Condition: You also win if your Worker moves down two or more levels.
         //Prometheus  //Your Turn: If your Worker does not move up, it may build both before and after moving.
     }
 
@@ -39,7 +39,7 @@ public class PowerManager
 
         }
 
-        if(AthenaPlayer.mIndex == pBuilder.mPlayer)
+        if(AthenaPlayer.mIndex == pBuilder.mPlayerIndex)
         {
             //The current player has Athena's power, the restriction does not apply to them
             return true;

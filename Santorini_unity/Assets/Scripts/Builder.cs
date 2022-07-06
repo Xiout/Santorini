@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
-
+using static PowerManager;
 
 public class Builder : BoardGameComponent
 {
@@ -15,7 +16,7 @@ public class Builder : BoardGameComponent
     public bool mHasMovedThisTurn;
 
     ///Id of the player owner of the builder
-    public int mPlayer;
+    public int mPlayerIndex;
 
     // Start is called before the first frame update
     void Start()
@@ -38,11 +39,31 @@ public class Builder : BoardGameComponent
     void Update()
     {
         GameManager lGM = GameManager.sGetInstance();
+        
+        if (mPlayerIndex != lGM.GetCurrentPlayer())
+            return;//This builder does not belong to the current Player
 
-        if (lGM.GetGameState() == GameManager.GameState.PLAY && mCurrentCell.getBuildingLevel() == 3)
+        int lCurrentLvl = mCurrentCell.getBuildingLevel();
+        int lPreviousLvl = mPreviousTurnCell.getBuildingLevel();
+        Player lPlayer = lGM.mPlayers.Find(p => p.mIndex == mPlayerIndex);
+
+        if (lGM.GetGameState() == GameManager.GameState.PLAY)
         {
-            GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayer);
+            //Normal Win condition
+            if (lCurrentLvl > lPreviousLvl && lCurrentLvl == 3)
+            {
+                GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayerIndex);
+            }
+
+            //Pan Win Condition
+            if (lPlayer.mGod == God.Pan && lCurrentLvl <= lPreviousLvl-2) 
+            {
+                GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayerIndex);
+            }
         }
+
+
+        
     }
 
     ///get the list of all cells the builder can currently move to

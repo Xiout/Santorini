@@ -258,7 +258,7 @@ public class Board : MonoBehaviour
 
                         //THE SELECTION CHANGE 
                         Builder lClickedBuilder = lClickedBGComp as Builder;
-                        if (lGM.GetInGamePhase() != InGamePhase.MOVE || (lClickedBuilder != null && lClickedBuilder.mPlayer == lCurrentPlayer.mIndex))
+                        if (lGM.GetInGamePhase() != InGamePhase.MOVE || (lClickedBuilder != null && lClickedBuilder.mPlayerIndex == lCurrentPlayer.mIndex))
                         {
                             //This part is for reassign the original material the previously clicked object
                             if (mSelectedBGComp != null)
@@ -311,7 +311,7 @@ public class Board : MonoBehaviour
                             //create the Builder script
                             Builder lBuilderScr = lBuilderObj.AddComponent<Builder>();
                             //declare its player owner
-                            lBuilderScr.mPlayer = lCurrentPlayer.mIndex;
+                            lBuilderScr.mPlayerIndex = lCurrentPlayer.mIndex;
                             //declare its location
                             lBuilderScr.mCurrentCell = lSelectedCell;
                             lBuilderScr.mPreviousTurnCell = lBuilderScr.mCurrentCell;
