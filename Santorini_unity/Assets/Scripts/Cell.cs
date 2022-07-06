@@ -21,9 +21,14 @@ public class Cell : BoardGameComponent
     }
 
     /// getter of the number of floor the cell currently have
-    public int getBuildingLevel()
+    public int GetBuildingLevel()
     {
         return mBuildingLevel;
+    }
+
+    public bool IsPerimeter()
+    {
+        return mAdjoiningCells.Count < 8;
     }
 
     ///If it's possible to build on this cell, do it and return true

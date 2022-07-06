@@ -43,20 +43,20 @@ public class Builder : BoardGameComponent
         if (mPlayerIndex != lGM.GetCurrentPlayer())
             return;//This builder does not belong to the current Player
 
-        int lCurrentLvl = mCurrentCell.getBuildingLevel();
-        int lPreviousLvl = mPreviousTurnCell.getBuildingLevel();
+        int lCurrentLvl = mCurrentCell.GetBuildingLevel();
+        int lPreviousLvl = mPreviousTurnCell.GetBuildingLevel();
         Player lPlayer = lGM.mPlayers.Find(p => p.mIndex == mPlayerIndex);
 
         if (lGM.GetGameState() == GameManager.GameState.PLAY)
         {
             //Normal Win condition
-            if (lCurrentLvl > lPreviousLvl && lCurrentLvl == 3)
+            if (lCurrentLvl > lPreviousLvl && lCurrentLvl == 3 && HeraWinRestriction(this))
             {
                 GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayerIndex);
             }
 
             //Pan Win Condition
-            if (lPlayer.mGod == God.Pan && lCurrentLvl <= lPreviousLvl-2) 
+            if (lPlayer.mGod == God.Pan && lCurrentLvl <= lPreviousLvl-2 && HeraWinRestriction(this)) 
             {
                 GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayerIndex);
             }
@@ -110,8 +110,8 @@ public class Builder : BoardGameComponent
 
         return mCurrentCell.mAdjoiningCells.Contains(pCell) && //Can move only on Adjoining Cells
             (pCell.mIsFree || lPlayer.mGod==God.Apollo) && //Can move only on cell not occupied by another builder (expect with specific god power)
-            pCell.getBuildingLevel()-mCurrentCell.getBuildingLevel()<2 &&  //Cannot Got Up from more than 1 level at the time
-            pCell.getBuildingLevel() < 4 //Cannot move on floor 4 or above
+            pCell.GetBuildingLevel()-mCurrentCell.GetBuildingLevel()<2 &&  //Cannot Got Up from more than 1 level at the time
+            pCell.GetBuildingLevel() < 4 //Cannot move on floor 4 or above
             && PowerManager.AthenaMoveRestriction(this, pCell) //Check Athena's power restriction (If a player with Athena has move up during his last turn, no other player can move up this turn)
             && PowerManager.ArtemisSecondMoveRestriction(this, pCell); //Check Artemis's power restriction (Player with Artemis power may move twice before building but second movement cannot be initial position)
     }
@@ -121,7 +121,7 @@ public class Builder : BoardGameComponent
     {
         return mCurrentCell.mAdjoiningCells.Contains(pCell) //Can build only on Adjoining cells
             && pCell.mIsFree //Cannot build on occupied cells
-            && pCell.getBuildingLevel() < 4; //Cannot build above 4th level
+            && pCell.GetBuildingLevel() < 4; //Cannot build above 4th level
     }
 
     ///If the builder is able to move to pCell, do it and return true
@@ -160,7 +160,7 @@ public class Builder : BoardGameComponent
     public void UpdatePhysicalPosition()
     {
         Vector3 lCellPos = mCurrentCell.gameObject.transform.position;
-        float yPos = sPresetY[mCurrentCell.getBuildingLevel()];
+        float yPos = sPresetY[mCurrentCell.GetBuildingLevel()];
         Vector3 lNewPos = new Vector3(lCellPos.x, yPos, lCellPos.z);
         gameObject.transform.SetPositionAndRotation(lNewPos, gameObject.transform.rotation);
     }

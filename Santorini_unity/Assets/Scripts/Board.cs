@@ -233,7 +233,7 @@ public class Board : MonoBehaviour
                                             if (lClickedCell.TryBuild())
                                             {
                                                 //generation of the building
-                                                GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.getBuildingLevel() - 1], lClickedCell.transform.position, new Quaternion());
+                                                GameObject building = GameObject.Instantiate(mBuildingPrefabs[lClickedCell.GetBuildingLevel() - 1], lClickedCell.transform.position, new Quaternion());
                                                 building.transform.SetParent(lClickedCell.transform);
 
                                                 //reset the default material on all adjacing cells of the builder

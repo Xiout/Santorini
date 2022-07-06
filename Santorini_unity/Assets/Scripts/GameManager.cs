@@ -108,7 +108,7 @@ public partial class GameManager
 
         //Set God
         mPlayers[0].SetGod(God.Apollo);
-        mPlayers[1].SetGod(God.Pan);
+        mPlayers[1].SetGod(God.Hera);
 
         //Set First Player
         mCurrentPlayer = 0;
