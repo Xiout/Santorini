@@ -106,9 +106,8 @@ public partial class GameManager
         mVictoryGO.SetActive(false);
         mInGameGO.SetActive(true);
 
-        //Set God
-        mPlayers[0].SetGod(God.Apollo);
-        mPlayers[1].SetGod(God.Hera);
+        //Set Gods
+        mOptionMenuGO.GetComponent<OptionMenu>().SetAllGodPower();
 
         //Set First Player
         mCurrentPlayer = 0;

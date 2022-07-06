@@ -53,6 +53,16 @@ public class Player
         return null;
     }
 
+    public bool CanOneBuilderMoveUp()
+    {
+        bool lCanMoveUp = false;
+        for(int i=0; i<mBuilders.Count; ++i)
+        {
+            lCanMoveUp = lCanMoveUp || mBuilders[i].CanMoveUp();
+        }
+        return lCanMoveUp;
+    }
+
     public int GetBuildersCount()
     {
         return mBuilders.Count;

@@ -228,7 +228,7 @@ public class Board : MonoBehaviour
                                         //BUILD
                                         Debug.Log("BUILDING PHASE");
                                         Builder lSelectedBuilder = mSelectedBGComp as Builder;
-                                        if (lSelectedBuilder != null && lSelectedBuilder.getAllCellsAvailableForBuilding().Contains(lClickedCell))
+                                        if (lSelectedBuilder != null && lSelectedBuilder.GetAllCellsAvailableForBuilding().Contains(lClickedCell))
                                         {
                                             if (lClickedCell.TryBuild())
                                             {
@@ -432,7 +432,7 @@ public class Board : MonoBehaviour
         if (lBuilder == null)
             return;
 
-        HighlightCells(lBuilder.getAllCellsAvailableForBuilding(), true);
+        HighlightCells(lBuilder.GetAllCellsAvailableForBuilding(), true);
         return;
     }
     

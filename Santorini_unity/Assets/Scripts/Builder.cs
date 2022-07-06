@@ -74,7 +74,7 @@ public class Builder : BoardGameComponent
         for (int i=0; i< lAvailableCells.Count; ++i)
         {
             Cell lCell = lAvailableCells[i];
-            if(!isCellAvailableForMoving(lCell))
+            if(!(IsCellAvailableForMoving(lCell)&&PowerManager.PersephoneMoveRestriction(this, lCell)))
             {
                 lAvailableCells.RemoveAt(i);
                 i--;
@@ -85,14 +85,14 @@ public class Builder : BoardGameComponent
     }
 
     ///get the list of all cells the builder can currently build on
-    public List<Cell> getAllCellsAvailableForBuilding()
+    public List<Cell> GetAllCellsAvailableForBuilding()
     {
         List<Cell> lAvailableCells = new List<Cell>(mCurrentCell.mAdjoiningCells);
 
         for (int i = 0; i < lAvailableCells.Count; ++i)
         {
             Cell lCell = lAvailableCells[i];
-            if (!isCellAvailableForBuilding(lCell))
+            if (!IsCellAvailableForBuilding(lCell))
             {
                 lAvailableCells.RemoveAt(i);
                 i--;
@@ -103,32 +103,47 @@ public class Builder : BoardGameComponent
     }
 
     ///return true if the builder is currently able to move to the cell as parameter
-    private bool isCellAvailableForMoving(Cell pCell)
+    private bool IsCellAvailableForMoving(Cell pCell)
     {
         GameManager lGM = GameManager.sGetInstance();
         Player lPlayer = lGM.mPlayers.Find(p => p.mIndex == mPlayerIndex);
 
         return mCurrentCell.mAdjoiningCells.Contains(pCell) && //Can move only on Adjoining Cells
-            (pCell.mIsFree || lPlayer.mGod==God.Apollo) && //Can move only on cell not occupied by another builder (expect with specific god power)
-            pCell.GetBuildingLevel()-mCurrentCell.GetBuildingLevel()<2 &&  //Cannot Got Up from more than 1 level at the time
+            (pCell.mIsFree || lPlayer.mGod == God.Apollo) && //Can move only on cell not occupied by another builder (expect with specific god power)
+            pCell.GetBuildingLevel() - mCurrentCell.GetBuildingLevel() < 2 &&  //Cannot Got Up from more than 1 level at the time
             pCell.GetBuildingLevel() < 4 //Cannot move on floor 4 or above
             && PowerManager.AthenaMoveRestriction(this, pCell) //Check Athena's power restriction (If a player with Athena has move up during his last turn, no other player can move up this turn)
             && PowerManager.ArtemisSecondMoveRestriction(this, pCell); //Check Artemis's power restriction (Player with Artemis power may move twice before building but second movement cannot be initial position)
+            //&& PowerManager.PersephoneMoveRestriction(this, pCell); //Check Persephone's Power restriction (Opponent must go up if possible)
     }
 
     ///return true if the builder is currently able to move to the cell as parameter
-    private bool isCellAvailableForBuilding(Cell pCell)
+    private bool IsCellAvailableForBuilding(Cell pCell)
     {
         return mCurrentCell.mAdjoiningCells.Contains(pCell) //Can build only on Adjoining cells
             && pCell.mIsFree //Cannot build on occupied cells
             && pCell.GetBuildingLevel() < 4; //Cannot build above 4th level
     }
 
+    public bool CanMoveUp()
+    {
+        for(int i=0; i<mCurrentCell.mAdjoiningCells.Count; ++i)
+        {
+            Cell lCell = mCurrentCell.mAdjoiningCells[i];
+            if (IsCellAvailableForMoving(lCell) && lCell.GetBuildingLevel() > mCurrentCell.GetBuildingLevel())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     ///If the builder is able to move to pCell, do it and return true
     ///If not, return false
     public bool TryMove(Cell pCell)
     {
-        if (!isCellAvailableForMoving(pCell))
+        if (!(IsCellAvailableForMoving(pCell) && PowerManager.PersephoneMoveRestriction(this, pCell)))
         {
             return false;
         }

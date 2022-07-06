@@ -20,7 +20,7 @@ public class PowerManager
         //Zeus,       //Your Build: Your Builder may build a block under them.
         //Triton,     //Your Move: Each time your Worker moves into a perimeter space, it may immediately move again.
         //Poseidon,   //End of Your Turn: If your unmoved Worker is on the ground level, it may build up to three times.
-        //Persephone, //Opponent’s Turn: If possible, at least one Worker must move up this turn.
+        Persephone,   //Opponent’s Turn: If possible, at least one Worker must move up this turn.
         //Limus,      //Opponent’s Turn: Opponent Workers cannot build on spaces neighboring your Workers, unless building a dome to create a Complete Tower.
         //Hypnus,     //Start of Opponent’s Turn: If one of your opponent’s Workers is higher than all of their others, it cannot move.
         //Hestia,     //Your Build: Your Worker may build one additional time, but this cannot be on a perimeter space.
@@ -44,25 +44,24 @@ public class PowerManager
     public static bool AthenaMoveRestriction(Builder pBuilder, Cell pCell)
     {
         GameManager lGM = GameManager.sGetInstance();
-        Player AthenaPlayer = lGM.mPlayers.Find(player => player.mGod == God.Athena);
+        Player athenaPlayer = lGM.mPlayers.Find(player => player.mGod == God.Athena);
 
-        if (AthenaPlayer == null)
+        if (athenaPlayer == null)
         {
             //Athena is not played this game
             return true;
-
         }
 
-        if(AthenaPlayer.mIndex == pBuilder.mPlayerIndex)
+        if(athenaPlayer.mIndex == pBuilder.mPlayerIndex)
         {
             //The current player has Athena's power, the restriction does not apply to them
             return true;
         }
 
         bool hasMovedUp = false;
-        for(int i=0; i<AthenaPlayer.GetBuildersCount(); ++i)
+        for(int i=0; i<athenaPlayer.GetBuildersCount(); ++i)
         {
-            hasMovedUp = hasMovedUp || AthenaPlayer.GetBuilder(i).mCurrentCell.GetBuildingLevel()> AthenaPlayer.GetBuilder(i).mPreviousTurnCell.GetBuildingLevel();
+            hasMovedUp = hasMovedUp || athenaPlayer.GetBuilder(i).mCurrentCell.GetBuildingLevel()> athenaPlayer.GetBuilder(i).mPreviousTurnCell.GetBuildingLevel();
         }
 
         if (!hasMovedUp)
@@ -88,20 +87,46 @@ public class PowerManager
     public static bool HeraWinRestriction(Builder pBuilder)
     {
         GameManager lGM = GameManager.sGetInstance();
-        Player HeraPlayer = lGM.mPlayers.Find(player => player.mGod == God.Hera);
+        Player heraPlayer = lGM.mPlayers.Find(player => player.mGod == God.Hera);
 
-        if (HeraPlayer == null)
+        if (heraPlayer == null)
         {
             //Hera is not played this game
             return true;
         }
 
-        if(pBuilder.mPlayerIndex == HeraPlayer.mIndex)
+        if(pBuilder.mPlayerIndex == heraPlayer.mIndex)
         {
             //The current player has Hera's power, the restriction does not apply to them
             return true;
         }
 
         return !pBuilder.mCurrentCell.IsPerimeter();
+    }
+
+    public static bool PersephoneMoveRestriction(Builder pBuilder, Cell pCell)
+    {
+        GameManager lGM = GameManager.sGetInstance();
+        Player persephonePlayer = lGM.mPlayers.Find(player => player.mGod == God.Persephone);
+
+        if (persephonePlayer == null)
+        {
+            //Persephone is not played this game
+            return true;
+        }
+
+        if (persephonePlayer.mIndex == pBuilder.mPlayerIndex)
+        {
+            //The current player has Persephone's power, the restriction does not apply to them
+            return true;
+        }
+
+        Player currentPlayer = lGM.mPlayers.Find(p => p.mIndex == pBuilder.mPlayerIndex);
+        if (currentPlayer.CanOneBuilderMoveUp() && !pBuilder.mHasMovedThisTurn)
+        {
+            return pCell.GetBuildingLevel() > pBuilder.mCurrentCell.GetBuildingLevel();
+        }
+
+        return true;
     }
 }
