@@ -60,20 +60,23 @@ public class Builder : BoardGameComponent
         if (lGM.GetGameState() == GameManager.GameState.PLAY)
         {
             //Normal Win condition
-            if (lCurrentLvl > lPreviousLvl && lCurrentLvl == 3 && HeraWinRestriction(this))
+            if (lCurrentLvl > lPreviousLvl && lCurrentLvl == 3 && mHasMovedThisTurn && HeraWinRestriction(this))
             {
-                GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayerIndex);
+                lGM.mVictoryEvent.Invoke(mPlayerIndex);
             }
 
             //Pan Win Condition
-            if (lPlayer.mGod == God.Pan && lCurrentLvl <= lPreviousLvl-2 && HeraWinRestriction(this)) 
+            if (lPlayer.mGod == God.Pan && lCurrentLvl <= lPreviousLvl-2 && mHasMovedThisTurn && HeraWinRestriction(this)) 
             {
-                GameManager.sGetInstance().mVictoryEvent.Invoke(mPlayerIndex);
+                lGM.mVictoryEvent.Invoke(mPlayerIndex);
             }
-        }
 
-
-        
+            //Chronus Win Condition
+            if (lPlayer.mGod == God.Chronus && lGM.GetBoard().GetNumberCompletedTower() >= 5)
+            {
+                lGM.mVictoryEvent.Invoke(mPlayerIndex);
+            }
+        } 
     }
 
     /// <summary>

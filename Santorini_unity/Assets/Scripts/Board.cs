@@ -56,6 +56,11 @@ public class Board : MonoBehaviour
     /// All other type of gameobject are ignored from the selection
     /// </summary>
     private BoardGameComponent mSelectedBGComp;
+
+    /// <summary>
+    /// Indicate how many towers of 4 floor exists on the board
+    /// </summary>
+    private int mNumberCompletedTower;
     
     /// <summary>
     /// Return the builder that is located on the current cell if any
@@ -158,6 +163,8 @@ public class Board : MonoBehaviour
             lRowObj.transform.SetParent(gameObject.transform);
             lPreviousRowObj = lRowObj;
         }
+
+        mNumberCompletedTower = 0;
 
         GameManager lGM = GameManager.sGetInstance();
         lGM.SetBoard(this);
@@ -408,6 +415,23 @@ public class Board : MonoBehaviour
     }
 
     /// <summary>
+    /// Getter of mNumberCompletedTower
+    /// </summary>
+    /// <returns></returns>
+    public int GetNumberCompletedTower()
+    {
+        return mNumberCompletedTower;
+    }
+
+    /// <summary>
+    /// Called when a new tower is completed
+    /// </summary>
+    public void AddCompleteTower()
+    {
+        ++mNumberCompletedTower;
+    }
+
+    /// <summary>
     /// Remove all Builders and clear the cell to start a new game
     /// </summary>
     private void ClearBoard()
@@ -427,6 +451,7 @@ public class Board : MonoBehaviour
             Debug.Log("Clear " + mAllCells[iCell].gameObject.name);
             mAllCells[iCell].ClearCell();
         }
+        mNumberCompletedTower = 0;
     }
 
     /// <summary>

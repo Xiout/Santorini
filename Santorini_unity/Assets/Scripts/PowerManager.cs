@@ -26,7 +26,7 @@ public class PowerManager
         //Hestia,     //Your Build: Your Builder may build one additional time, but this cannot be on a perimeter space.
         Hera,         //Opponent’s Turn: An opponent cannot win by moving into a perimeter space.
         //Dionysus,   //Your Build: Each time a Builder you control creates a Complete Tower, you may take an additional turn using an opponent Builder instead of your own. No player can win during these additional turns.
-        //Chronus,    //Win Condition: You also win when there are at least five Complete Towers on the board.
+        Chronus,      //Win Condition: You also win when there are at least five Complete Towers on the board.
         //Charon,     //Your Move: Before your Builder moves, you may force a neighboring opponent Builder to the space directly on the other side of your Builder, if that space is unoccupied.
         //Bia,        //Any Move: If an opponent Builder starts its turn neighboring one of your Builders, its last move must be to a space neighboring one of your Builders.
         //Ares,       //End of Your Turn: You may remove an unoccupied block (not dome) neighboring your unmoved Builder.

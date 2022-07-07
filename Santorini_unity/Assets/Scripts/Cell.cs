@@ -43,10 +43,8 @@ public class Cell : BoardGameComponent
         return mAdjoiningCells.Count < 8;
     }
 
-    //If it's possible to build on this cell, do it and return true
-    //If not, return false
     /// <summary>
-    /// Perform a build ff it's possible to build on this cell and return true 
+    /// Perform a build if it's possible to build on this cell and return true 
     /// If not, return false
     /// </summary>
     /// <returns></returns>
@@ -55,6 +53,11 @@ public class Cell : BoardGameComponent
         if(mBuildingLevel<4 && mIsFree)
         {
             ++mBuildingLevel;
+            if (mBuildingLevel >= 4)
+            {
+                GameManager lGM = GameManager.sGetInstance();
+                lGM.GetBoard().AddCompleteTower();
+            }
             return true;
         }
         return false;
